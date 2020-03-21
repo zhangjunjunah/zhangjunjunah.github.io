@@ -5,15 +5,17 @@
   
 
   
-  <title>机锋小摩托的分享</title>
+  <title>ceph和s3的安装 | 机锋小摩托的分享</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="个人学习及工作经验分享">
-<meta property="og:type" content="website">
-<meta property="og:title" content="机锋小摩托的分享">
-<meta property="og:url" content="https://zhangjunjunah.github.io/index.html">
+  <meta name="description" content="部署说明 安装的ceph版本（14.2.4）、s3 版本(2.0.2)  ceph使用ceph-deploy部署高可用集群至少需要3台节点(ceph 监视器需要3个以上节点)  ceph推荐使用裸盘安装osd(文件夹也可以部署，但不推荐) ceph部署节点规划   节点ip 节点主机名 节点ceph组件    192.168.129.127 ceph127（ceph 主节点） mds1、mon1、">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ceph和s3的安装">
+<meta property="og:url" content="https://zhangjunjunah.github.io/2020/03/21/ceph%E5%92%8Cs3%E7%9A%84%E5%AE%89%E8%A3%85/index.html">
 <meta property="og:site_name" content="机锋小摩托的分享">
-<meta property="og:description" content="个人学习及工作经验分享">
+<meta property="og:description" content="部署说明 安装的ceph版本（14.2.4）、s3 版本(2.0.2)  ceph使用ceph-deploy部署高可用集群至少需要3台节点(ceph 监视器需要3个以上节点)  ceph推荐使用裸盘安装osd(文件夹也可以部署，但不推荐) ceph部署节点规划   节点ip 节点主机名 节点ceph组件    192.168.129.127 ceph127（ceph 主节点） mds1、mon1、">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-03-21T07:57:15.000Z">
+<meta property="article:modified_time" content="2020-03-21T07:59:23.877Z">
 <meta property="article:author" content="Ge Moto">
 <meta name="twitter:card" content="summary">
   
@@ -64,9 +66,7 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-ceph和s3的安装" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-ceph和s3的安装" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/03/21/ceph%E5%92%8Cs3%E7%9A%84%E5%AE%89%E8%A3%85/" class="article-date">
   <time datetime="2020-03-21T07:57:15.000Z" itemprop="datePublished">2020-03-21</time>
@@ -79,8 +79,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/03/21/ceph%E5%92%8Cs3%E7%9A%84%E5%AE%89%E8%A3%85/">ceph和s3的安装</a>
+    <h1 class="article-title" itemprop="name">
+      ceph和s3的安装
     </h1>
   
 
@@ -213,11 +213,9 @@
     </footer>
   </div>
   
-</article>
-
-
+    
   
-
+</article>
 
 </section>
         
