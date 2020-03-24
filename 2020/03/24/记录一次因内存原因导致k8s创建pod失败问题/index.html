@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>记录一次因内存原因导致k8s创建pod失败问题 | Hexo</title>
+  <meta name="description" content="记一次因内存原因导致k8s创建pod一直等待问题问题背景​        最近同事反馈使用k8s创建jupyter经常在某一台节点创建不起来(其他节点正常)，如果把这台节点的docker重启，当时可以恢复正常，但过段时间问题又会复现,下面附上kubectl describe部分日志。 12345Events:  Type     Reason                  Age">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记录一次因内存原因导致k8s创建pod失败问题">
+<meta property="og:url" content="https://zhangjunjunah.github.io/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="机锋小摩托的分享">
+<meta property="og:description" content="记一次因内存原因导致k8s创建pod一直等待问题问题背景​        最近同事反馈使用k8s创建jupyter经常在某一台节点创建不起来(其他节点正常)，如果把这台节点的docker重启，当时可以恢复正常，但过段时间问题又会复现,下面附上kubectl describe部分日志。 12345Events:  Type     Reason                  Age">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-03-24T06:06:19.534Z">
+<meta property="article:modified_time" content="2020-03-24T07:11:47.676Z">
+<meta property="article:author" content="机锋小摩托">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://zhangjunjunah.github.io/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="机锋小摩托的分享" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body class="main-center theme-white" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/zhangjunjunah" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">机锋小摩托</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Web 开发 &amp; 设计</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> HeFei, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-books">
+          <a href="/books">
+            
+            <i class="icon icon-book-fill"></i>
+            
+            <span class="menu-title">书单</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/cofess" target="_blank" title="Github" ><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+
+    
+      
+
+    
+      
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a><span class="archive-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/" class="title">记录一次因内存原因导致k8s创建pod失败问题</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-03-24T06:06:19.534Z" itemprop="datePublished">2020-03-24</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/" class="title">ceph 配置 RGW高可用</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-03-21T09:07:59.386Z" itemprop="datePublished">2020-03-21</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2020/03/21/ceph%E5%92%8Cs3%E7%9A%84%E5%AE%89%E8%A3%85/" class="title">ceph和s3的安装</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-03-21T07:57:15.240Z" itemprop="datePublished">2020-03-21</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-记录一次因内存原因导致k8s创建pod失败问题" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      记录一次因内存原因导致k8s创建pod失败问题
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/" class="article-date">
+	  <time datetime="2020-03-24T06:06:19.534Z" itemprop="datePublished">2020-03-24</time>
+	</a>
+</span>
+        
+        
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h4 id="记一次因内存原因导致k8s创建pod一直等待问题"><a href="#记一次因内存原因导致k8s创建pod一直等待问题" class="headerlink" title="记一次因内存原因导致k8s创建pod一直等待问题"></a>记一次因内存原因导致k8s创建pod一直等待问题</h4><h5 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a>问题背景</h5><p>​        最近同事反馈使用k8s创建jupyter经常在某一台节点创建不起来(其他节点正常)，如果把这台节点的docker重启，当时可以恢复正常，但过段时间问题又会复现,下面附上kubectl describe部分日志。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Events:</span><br><span class="line">  Type     Reason                  Age                From                     Message</span><br><span class="line"></span><br><span class="line">----     ------                  ----               ----                     -------</span><br><span class="line">  Warning  FailedCreatePodSandBox  1s (x13 over 18s)  kubelet, centos7-141     Failed create pod sandbox: rpc error: code = Unknown desc = failed to start sandbox container for pod "jupyter-lab1584951113027": Error response from daemon: OCI runtime create failed: container_linux.go:345: starting container process caused "process_linux.go:303: getting the final child's pid from pipe caused \"EOF\"": unknown</span><br></pre></td></tr></table></figure>
+
+<h5 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h5><p>​        带着疑问上网查询报错，有的说是docker版本、centos 内核与k8s版本不兼容导致？</p>
+<p>​        依次查询了几台主机的docker版本(k8s是一起安装的所以直接排除)，都是19.03.5版本(centos版本也一致)。但仔细想想其他节点都没出现这个问题，可能问题原因不在这，暂时排除。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">Client: Docker Engine - Community</span><br><span class="line"> Version:           19.03.5</span><br><span class="line"> API version:       1.40</span><br><span class="line"> Go version:        go1.12.12</span><br><span class="line"> Git commit:        633a0ea</span><br><span class="line"> Built:             Wed Nov 13 07:25:41 2019</span><br><span class="line"> OS/Arch:           linux/amd64</span><br><span class="line"> Experimental:      false</span><br><span class="line"></span><br><span class="line">Server: Docker Engine - Community</span><br><span class="line"> Engine:</span><br><span class="line">  Version:          19.03.5</span><br><span class="line">  API version:      1.40 (minimum version 1.12)</span><br><span class="line">  Go version:       go1.12.12</span><br><span class="line">  Git commit:       633a0ea</span><br><span class="line">  Built:            Wed Nov 13 07:24:18 2019</span><br><span class="line">  OS/Arch:          linux/amd64</span><br><span class="line">  Experimental:     false</span><br><span class="line"> containerd:</span><br><span class="line">  Version:          1.2.6</span><br><span class="line">  GitCommit:        894b81a4b802e4eb2a91d1ce216b8817763c29fb</span><br><span class="line"> runc:</span><br><span class="line">  Version:          1.0.0-rc8</span><br><span class="line">  GitCommit:        425e105d5a03fabd737a126ad93d62a9eeede87f</span><br><span class="line"> docker-init:</span><br><span class="line">  Version:          0.18.0</span><br><span class="line">  GitCommit:        fec3683</span><br></pre></td></tr></table></figure>
+
+<p>​        问题困扰了一两天，后来看到一篇文章<a href="https://cloud.tencent.com/developer/article/1411527" target="_blank" rel="noopener">Kubernetes因限制内存配置引发的错误</a>给我启发，会不会是内存原因导致的问题。使用free 命令对比了两台节点的内存。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 问题节点</span></span><br><span class="line">[root@centos7-141 log]# free -g         </span><br><span class="line">              total        used        free      shared  buff/cache   available</span><br><span class="line">Mem:             22           1           0           1          20          12</span><br><span class="line">Swap:             0           0           0</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 正常节点</span></span><br><span class="line">[root@centos7-142 ~]# free -g</span><br><span class="line">              total        used        free      shared  buff/cache   available</span><br><span class="line">Mem:             22           2           9           1          10          15</span><br><span class="line">Swap:             0           0           0</span><br></pre></td></tr></table></figure>
+
+<p>等等，发现了一些端倪，为啥总计22g，只使用1g,剩余内存为啥是0？还有buff/cache 是啥？带着疑问，查询了 buff/cache,在这记录下。</p>
+<blockquote>
+<p>Linux服务器运行一段时间后，由于其内存管理机制，会将暂时不用的内存转为buff/cache，这样在程序使用到这一部分数据时，能够很快的取出，从而提高系统的运行效率，所以这也正是linux内存管理中非常出色的一点，所以乍一看内存剩余的非常少，但是在程序真正需要内存空间时，linux会将缓存让出给程序使用，这样达到对内存的最充分利用，所以真正剩余的内存是free+buff/cache</p>
+</blockquote>
+<p>在这里按照先解决的原则，按照操作步骤释放了buff/cache。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">echo 1 &gt; /proc/sys/vm/drop_caches</span><br><span class="line"><span class="meta">#</span><span class="bash">操作后的内存占用</span></span><br><span class="line">[root@centos7-141 log]# free -g</span><br><span class="line">              total        used        free      shared  buff/cache   available</span><br><span class="line">Mem:             22           1           7           1          13          12</span><br><span class="line">Swap:             0           0</span><br></pre></td></tr></table></figure>
+
+<p>重新创建pod，创建成功，问题解决！</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Name:         jupyter-lab1584951113027</span><br><span class="line">Namespace:    kubeflow</span><br><span class="line">Priority:     0</span><br><span class="line">Node:         centos7-141/192.168.128.141</span><br><span class="line">Start Time:   Tue, 24 Mar 2020 14:00:46 +0800</span><br><span class="line">Labels:       app=jupyterhub</span><br><span class="line">              component=singleuser-server</span><br><span class="line">              heritage=jupyterhub</span><br><span class="line">Annotations:  hub.jupyter.org/username: lab1584951113027</span><br><span class="line">Status:       Running</span><br><span class="line">IP:           10.244.3.3</span><br></pre></td></tr></table></figure>
+
+<h5 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h5><p>​        尽管问题解决了，但还是有两个疑问，在这里先记录下来</p>
+<ol>
+<li><p>buff/cache为啥没有在k8s需要内存时及时让出？</p>
+</li>
+<li><p>如果buff/cache没有及时让出缓存，为啥k8s events 不提示内存超出限制报错？</p>
+</li>
+</ol>
+<h5 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h5><p> <a href="https://cloud.tencent.com/developer/article/1411527" target="_blank" rel="noopener">Kubernetes因限制内存配置引发的错误</a></p>
+<p> <a href="https://www.cnblogs.com/freeweb/p/5713513.html" target="_blank" rel="noopener">Linux释放内存空间</a></p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://zhangjunjunah.github.io/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/" title="记录一次因内存原因导致k8s创建pod失败问题" target="_blank" rel="external">https://zhangjunjunah.github.io/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/zhangjunjunah" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/zhangjunjunah" target="_blank"><span class="text-dark">机锋小摩托</span><small class="ml-1x">Web 开发 &amp; 设计</small></a></h3>
+        <div>积极向上，热爱生活。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="uyan_frame"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    
+    <li class="next">
+      <a href="/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/" title="ceph 配置 RGW高可用"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/cofess" target="_blank" title="Github" ><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+    <script>
+(function ($) {
+    $('.search-form').on('submit', function (e) {
+        var keyword = $('.search-form-input[name="wd"]').val();
+        window.location = 'https://www.baidu.com/s?wd=site:zhangjunjunah.github.io ' + keyword;
+        return false;
+    });
+})(jQuery);
+</script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+    <script defer type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=[object Object]"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
