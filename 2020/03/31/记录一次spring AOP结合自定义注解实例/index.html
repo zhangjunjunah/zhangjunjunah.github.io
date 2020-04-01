@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>记录一次spring AOP结合自定义注解实例 | Hexo</title>
+  <meta name="description" content="spring AOP结合自定义注解实例使用背景​        近期同事使用产品经常遇到页面点击卡死长时间未响应现象(本人比较擅长解决问题)，心里带着疑问使用jstack命令查看jvm堆栈，发现阻塞的线程都是表更新操作(update)。查看了下代码发现是由于最近大家申请容器资源频繁，申请容器逻辑在一个事务中，又因为资源告警创建时间变长，导致锁表。在这里简单说下申请容器的步骤。  完成资源申请合法校">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记录一次spring AOP结合自定义注解实例">
+<meta property="og:url" content="https://zhangjunjunah.github.io/2020/03/31/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1spring%20AOP%E7%BB%93%E5%90%88%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B3%A8%E8%A7%A3%E5%AE%9E%E4%BE%8B/index.html">
+<meta property="og:site_name" content="机锋小摩托的分享">
+<meta property="og:description" content="spring AOP结合自定义注解实例使用背景​        近期同事使用产品经常遇到页面点击卡死长时间未响应现象(本人比较擅长解决问题)，心里带着疑问使用jstack命令查看jvm堆栈，发现阻塞的线程都是表更新操作(update)。查看了下代码发现是由于最近大家申请容器资源频繁，申请容器逻辑在一个事务中，又因为资源告警创建时间变长，导致锁表。在这里简单说下申请容器的步骤。  完成资源申请合法校">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-03-31T08:23:52.702Z">
+<meta property="article:modified_time" content="2020-04-01T06:51:10.936Z">
+<meta property="article:author" content="机锋小摩托">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://zhangjunjunah.github.io/2020/03/31/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1spring%20AOP%E7%BB%93%E5%90%88%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B3%A8%E8%A7%A3%E5%AE%9E%E4%BE%8B/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="机锋小摩托的分享" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body class="main-center theme-white" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/zhangjunjunah" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">机锋小摩托</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Web 开发 &amp; 设计</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> HeFei, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-books">
+          <a href="/books">
+            
+            <i class="icon icon-book-fill"></i>
+            
+            <span class="menu-title">书单</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/cofess" target="_blank" title="Github" ><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+
+    
+      
+
+    
+      
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2020/03/31/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1spring%20AOP%E7%BB%93%E5%90%88%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B3%A8%E8%A7%A3%E5%AE%9E%E4%BE%8B/" class="title">记录一次spring AOP结合自定义注解实例</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-03-31T08:23:52.702Z" itemprop="datePublished">2020-03-31</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/" class="title">记录一次因内存原因导致k8s创建pod失败问题</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-03-24T06:06:19.534Z" itemprop="datePublished">2020-03-24</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/" class="title">ceph 配置 RGW高可用</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-03-21T09:07:59.386Z" itemprop="datePublished">2020-03-21</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2020/03/21/ceph%E5%92%8Cs3%E7%9A%84%E5%AE%89%E8%A3%85/" class="title">ceph和s3的安装</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-03-21T07:57:15.240Z" itemprop="datePublished">2020-03-21</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-记录一次spring AOP结合自定义注解实例" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      记录一次spring AOP结合自定义注解实例
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/03/31/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1spring%20AOP%E7%BB%93%E5%90%88%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B3%A8%E8%A7%A3%E5%AE%9E%E4%BE%8B/" class="article-date">
+	  <time datetime="2020-03-31T08:23:52.702Z" itemprop="datePublished">2020-03-31</time>
+	</a>
+</span>
+        
+        
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/03/31/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1spring%20AOP%E7%BB%93%E5%90%88%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B3%A8%E8%A7%A3%E5%AE%9E%E4%BE%8B/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h3 id="spring-AOP结合自定义注解实例"><a href="#spring-AOP结合自定义注解实例" class="headerlink" title="spring AOP结合自定义注解实例"></a>spring AOP结合自定义注解实例</h3><h4 id="使用背景"><a href="#使用背景" class="headerlink" title="使用背景"></a>使用背景</h4><p>​        近期同事使用产品经常遇到页面点击卡死长时间未响应现象(本人比较擅长解决问题)，心里带着疑问使用<code>jstack</code>命令查看jvm堆栈，发现阻塞的线程都是表更新操作(update)。查看了下代码发现是由于最近大家申请容器资源频繁，申请容器逻辑在一个事务中，又因为资源告警创建时间变长，导致锁表。在这里简单说下申请容器的步骤。</p>
+<ol>
+<li><p>完成资源申请合法校验，更新资源表信息 </p>
+</li>
+<li><p>通过k8sApi创建需要的资源(pod、deployment、job、…)  –在资源紧张时创建时间较长</p>
+</li>
+<li><p>创建失败删除对应的k8s资源</p>
+<p><strong>备注</strong>：资源表记录了容器平台资源总共多少资源（CPU、GPU、memory），已使用多少等信息</p>
+</li>
+</ol>
+<p>逻辑很简单，但创建容器频繁容易造成锁表，导致页面卡死。改造方案也很简单，更新资源表不走事务，如果创建逻辑失败，手动回滚，不就可以了。<code>代理设计模式</code>最适合这种改造场景，话不多说赶紧动手。</p>
+<h4 id="使用实例"><a href="#使用实例" class="headerlink" title="使用实例"></a>使用实例</h4><h5 id="创建注解"><a href="#创建注解" class="headerlink" title="创建注解"></a>创建注解</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* <span class="doctag">@Description</span>: 申请容器(服务)资源注解</span></span><br><span class="line"><span class="comment">* <span class="doctag">@Param</span>:</span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span>:</span></span><br><span class="line"><span class="comment">* <span class="doctag">@Author</span>: zhangjj</span></span><br><span class="line"><span class="comment">* <span class="doctag">@Date</span>: 2020-02-25</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Target</span>(ElementType.METHOD)</span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> ApplyContainerRes &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="编写切面"><a href="#编写切面" class="headerlink" title="编写切面"></a>编写切面</h5><p>在这里只放上了相关的代码（包名涉及公司暂时屏蔽了）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 申请资源切面</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@ClassName</span>: ApplyContainerResAspect</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span>: zhangjj</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2020-02-25</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Aspect</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ApplyContainerResAspect</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> DataSourceTransactionManager dataSourceTransactionManager;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Pointcut</span>(<span class="string">"@annotation(xx.ApplyContainerRes)"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">annotationApplyContainerResPointCut</span><span class="params">()</span></span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Before</span>(<span class="string">"annotationApplyContainerResPointCut()"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doBefore</span><span class="params">(JoinPoint joinPoint)</span> </span>&#123;</span><br><span class="line">        DefaultTransactionDefinition def = <span class="keyword">new</span> DefaultTransactionDefinition();</span><br><span class="line">        <span class="comment">//新发起一个事务</span></span><br><span class="line">        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);</span><br><span class="line">        TransactionStatus transaction = dataSourceTransactionManager.getTransaction(def);</span><br><span class="line">        <span class="comment">//伪代码</span></span><br><span class="line">        <span class="comment">//申请资源(更新资源表信息)</span></span><br><span class="line">        applyRes(joinPoint);</span><br><span class="line">        dataSourceTransactionManager.commit(transaction);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@AfterThrowing</span>(<span class="string">"annotationApplyContainerResPointCut()"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doAfter</span><span class="params">(JoinPoint joinPoint)</span> </span>&#123;</span><br><span class="line">        DefaultTransactionDefinition def = <span class="keyword">new</span> DefaultTransactionDefinition();</span><br><span class="line">        <span class="comment">//新发起一个事务</span></span><br><span class="line">        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);</span><br><span class="line">        TransactionStatus transactionStatus = dataSourceTransactionManager.getTransaction(def);</span><br><span class="line">        <span class="comment">//伪代码</span></span><br><span class="line">        <span class="comment">//释放资源(更新资源表信息)</span></span><br><span class="line">        releaseResource(joinPoint);</span><br><span class="line">        dataSourceTransactionManager.commit(transactionStatus);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="业务使用"><a href="#业务使用" class="headerlink" title="业务使用"></a>业务使用</h5><p>service层业务逻辑样例</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* <span class="doctag">@Description</span>: 启动服务</span></span><br><span class="line"><span class="comment">* <span class="doctag">@Param</span>: [environmentId,modelServices]</span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span>: OperContainerResult</span></span><br><span class="line"><span class="comment">* <span class="doctag">@Author</span>: zhangjj</span></span><br><span class="line"><span class="comment">* <span class="doctag">@Date</span>: 2019-08-07</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="meta">@ApplyContainerRes</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> OperContainerResult <span class="title">startServing</span><span class="params">(Long environmentId, ModelServices modelServices)</span> </span>&#123;</span><br><span class="line">    OperContainerResult operContainerResult = <span class="keyword">new</span> OperContainerResult();</span><br><span class="line">    <span class="comment">//服务部署</span></span><br><span class="line">    deployModelService(modelServices);</span><br><span class="line">    operContainerResult.setCode(OperContainerResult.CODE.SUCCESS);</span><br><span class="line">    <span class="keyword">return</span> operContainerResult;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>改造完成，测试通过！很顺利嘛(手动怀疑)，可以让同事仿照上面样例改造其他业务逻辑了。</p>
+<h4 id="使用中的问题"><a href="#使用中的问题" class="headerlink" title="使用中的问题"></a>使用中的问题</h4><p>​        同事的改造速度也很快，本地测试发现不对，资源表的数据怎么没更新啊！我这边心想咋回事，我这边使用都好使，怎么你这却不好使了。。。一起查看逻辑，发现他那的逻辑是在同一个类中调用。我这边意识到动态代理好像不能代理类中方法的直接调用，网上搜搜看看有没有解决方法,很快找到了解决办法。</p>
+<p><strong>未调整前代码</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> batchWorkId</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 批量作业运行</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Param</span>: [batchWorkId]</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span>: void</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span>: zhangjj</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2020-01-03</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">runBatchWork</span><span class="params">(Long batchWorkId)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//其他业务</span></span><br><span class="line">    dosomething();</span><br><span class="line">    <span class="comment">//调用被代理的代理类</span></span><br><span class="line">    doRunBatchWork(batchWorkId);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@ApplyContainerRes</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doRunBatchWork</span><span class="params">(batchWorkId)</span> </span>&#123;</span><br><span class="line">	<span class="comment">//业务逻辑</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>网上的解决方案</strong></p>
+<blockquote>
+<p>既然 doRunBatchWork() 方法调用没有触发 AOP 逻辑的原因是因为我们以目标对象的身份(target object) 来调用的, 那么解决的关键自然就是以代理对象(proxied object)的身份来调用 doRunBatchWork() 方法。</p>
+</blockquote>
+<p>备注:由于这里的调用方法没有声明在接口中，需要将jdk动态代理调整为cglib动态代理(这里先留个坑，以后可以总结下两者的区别)</p>
+<p><strong>调整后的代码</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//在springboot启动类上添加下面一行注解</span></span><br><span class="line"><span class="meta">@EnableAspectJAutoProxy</span>(exposeProxy=<span class="keyword">true</span>,proxyTargetClass=<span class="keyword">true</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//业务伪代码</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@Autowired</span></span><br><span class="line"><span class="keyword">private</span> XXServiceImpl self;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> batchWorkId</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 批量作业运行</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Param</span>: [batchWorkId]</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span>: void</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span>: zhangjj</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2020-01-03</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">runBatchWork</span><span class="params">(Long batchWorkId)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//其他业务</span></span><br><span class="line">    dosomething();</span><br><span class="line">    <span class="comment">//调用被代理的代理类</span></span><br><span class="line">    self.doRunBatchWork(batchWorkId);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@ApplyContainerRes</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doRunBatchWork</span><span class="params">(batchWorkId)</span> </span>&#123;</span><br><span class="line">	<span class="comment">//业务逻辑</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>修改后，代理逻辑生效。不过，没过多久同事又反馈另外一个逻辑这么改造还是不好使，我查看了下发现方法声明是private(被代理的类必须要是public声明)。之前没意识到spring AOP使用中会遇到这些问题，在这里也简单总结下，方便查看回忆。</p>
+<h4 id="使用总结"><a href="#使用总结" class="headerlink" title="使用总结"></a>使用总结</h4><ul>
+<li>springboot使用cglib代码，在启动类上添加以下注解@EnableAspectJAutoProxy(exposeProxy=true,proxyTargetClass=true)</li>
+<li>被代理的方法尽量跨类调用</li>
+<li>被代理的方法不能声明为私有方法</li>
+</ul>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://zhangjunjunah.github.io/2020/03/31/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1spring%20AOP%E7%BB%93%E5%90%88%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B3%A8%E8%A7%A3%E5%AE%9E%E4%BE%8B/" title="记录一次spring AOP结合自定义注解实例" target="_blank" rel="external">https://zhangjunjunah.github.io/2020/03/31/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1spring%20AOP%E7%BB%93%E5%90%88%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B3%A8%E8%A7%A3%E5%AE%9E%E4%BE%8B/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/zhangjunjunah" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/zhangjunjunah" target="_blank"><span class="text-dark">机锋小摩托</span><small class="ml-1x">Web 开发 &amp; 设计</small></a></h3>
+        <div>积极向上，热爱生活。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="uyan_frame"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    
+    <li class="next">
+      <a href="/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/" title="记录一次因内存原因导致k8s创建pod失败问题"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/cofess" target="_blank" title="Github" ><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+    <script>
+(function ($) {
+    $('.search-form').on('submit', function (e) {
+        var keyword = $('.search-form-input[name="wd"]').val();
+        window.location = 'https://www.baidu.com/s?wd=site:zhangjunjunah.github.io ' + keyword;
+        return false;
+    });
+})(jQuery);
+</script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+    <script defer type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=[object Object]"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
