@@ -17,22 +17,21 @@
   <meta http-equiv="window-target" content="_top" />
   
   
-  <title>记录一次因内存原因导致k8s创建pod失败问题 | Hexo</title>
-  <meta name="description" content="问题背景​        最近同事反馈使用k8s创建jupyter经常在某一台节点创建不起来(其他节点正常)，如果把这台节点的docker重启，当时可以恢复正常，但过段时间问题又会复现,下面附上kubectl describe部分日志。 12345Events:  Type     Reason                  Age                From">
+  <title>Log4J2.xml自用配置 | Hexo</title>
+  <meta name="description" content="前言​    log4j2的配置文件网上一搜很容易搜到，这里主要就是记录下自己开发中经常使用的一套配置，方便以后查找。 配置文件详情123456789101112131415161718192021222324252627282930313233343536373839404142434445464748&lt;?xml version&#x3D;&quot;1.0&quot; encoding&#x3D;&quot;UTF-8&quot;?&gt;&amp;lt">
 <meta property="og:type" content="article">
-<meta property="og:title" content="记录一次因内存原因导致k8s创建pod失败问题">
-<meta property="og:url" content="https://zhangjunjunah.github.io/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:title" content="Log4J2.xml自用配置">
+<meta property="og:url" content="https://zhangjunjunah.github.io/2020/04/20/Log4J2.xml%E8%87%AA%E7%94%A8%E9%85%8D%E7%BD%AE/index.html">
 <meta property="og:site_name" content="机锋小摩托的分享">
-<meta property="og:description" content="问题背景​        最近同事反馈使用k8s创建jupyter经常在某一台节点创建不起来(其他节点正常)，如果把这台节点的docker重启，当时可以恢复正常，但过段时间问题又会复现,下面附上kubectl describe部分日志。 12345Events:  Type     Reason                  Age                From">
+<meta property="og:description" content="前言​    log4j2的配置文件网上一搜很容易搜到，这里主要就是记录下自己开发中经常使用的一套配置，方便以后查找。 配置文件详情123456789101112131415161718192021222324252627282930313233343536373839404142434445464748&lt;?xml version&#x3D;&quot;1.0&quot; encoding&#x3D;&quot;UTF-8&quot;?&gt;&amp;lt">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2020-03-23T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-04-21T02:57:39.847Z">
+<meta property="article:published_time" content="2020-04-20T13:53:40.000Z">
+<meta property="article:modified_time" content="2020-04-21T03:07:34.360Z">
 <meta property="article:author" content="机锋小摩托">
-<meta property="article:tag" content="K8S">
-<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="Log4J2">
 <meta name="twitter:card" content="summary">
   <!-- Canonical links -->
-  <link rel="canonical" href="https://zhangjunjunah.github.io/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/index.html">
+  <link rel="canonical" href="https://zhangjunjunah.github.io/2020/04/20/Log4J2.xml%E8%87%AA%E7%94%A8%E9%85%8D%E7%BD%AE/index.html">
   
     <link rel="alternate" href="/atom.xml" title="机锋小摩托的分享" type="application/atom+xml">
   
@@ -314,14 +313,14 @@
   
 <main class="main" role="main">
   <div class="content">
-  <article id="post-记录一次因内存原因导致k8s创建pod失败问题" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+  <article id="post-Log4J2.xml自用配置" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
     
     <div class="article-header">
       
         
   
     <h1 class="article-title" itemprop="name">
-      记录一次因内存原因导致k8s创建pod失败问题
+      Log4J2.xml自用配置
     </h1>
   
 
@@ -329,15 +328,15 @@
       <div class="article-meta">
         <span class="article-date">
     <i class="icon icon-calendar-check"></i>
-	<a href="/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/" class="article-date">
-	  <time datetime="2020-03-23T16:00:00.000Z" itemprop="datePublished">2020-03-24</time>
+	<a href="/2020/04/20/Log4J2.xml%E8%87%AA%E7%94%A8%E9%85%8D%E7%BD%AE/" class="article-date">
+	  <time datetime="2020-04-20T13:53:40.000Z" itemprop="datePublished">2020-04-20</time>
 	</a>
 </span>
         
         
   <span class="article-tag">
     <i class="icon icon-tags"></i>
-	<a class="article-tag-link" href="/tags/Docker/" rel="tag">Docker</a>, <a class="article-tag-link" href="/tags/K8S/" rel="tag">K8S</a>
+	<a class="article-tag-link" href="/tags/Log4J2/" rel="tag">Log4J2</a>
   </span>
 
 
@@ -350,41 +349,20 @@
 	</span>
 
 
-        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/#comments" class="article-comment-link">评论</a></span>
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/04/20/Log4J2.xml%E8%87%AA%E7%94%A8%E9%85%8D%E7%BD%AE/#comments" class="article-comment-link">评论</a></span>
         
       </div>
     </div>
     <div class="article-entry marked-body" itemprop="articleBody">
       
-        <h5 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a>问题背景</h5><p>​        最近同事反馈使用k8s创建jupyter经常在某一台节点创建不起来(其他节点正常)，如果把这台节点的docker重启，当时可以恢复正常，但过段时间问题又会复现,下面附上kubectl describe部分日志。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Events:</span><br><span class="line">  Type     Reason                  Age                From                     Message</span><br><span class="line"></span><br><span class="line">----     ------                  ----               ----                     -------</span><br><span class="line">  Warning  FailedCreatePodSandBox  1s (x13 over 18s)  kubelet, centos7-141     Failed create pod sandbox: rpc error: code = Unknown desc = failed to start sandbox container for pod "jupyter-lab1584951113027": Error response from daemon: OCI runtime create failed: container_linux.go:345: starting container process caused "process_linux.go:303: getting the final child's pid from pipe caused \"EOF\"": unknown</span><br></pre></td></tr></table></figure>
+        <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>​    log4j2的配置文件网上一搜很容易搜到，这里主要就是记录下自己开发中经常使用的一套配置，方便以后查找。</p>
+<h4 id="配置文件详情"><a href="#配置文件详情" class="headerlink" title="配置文件详情"></a>配置文件详情</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="comment">&lt;!--Configuration后面的status，这个用于设置log4j2自身内部的信息输出，可以不设置，当设置成trace时，你会看到log4j2内部各种详细输出--&gt;</span></span><br><span class="line"><span class="comment">&lt;!--monitorInterval：Log4j能够自动检测修改配置 文件和重新配置本身，设置间隔秒数--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">configuration</span> <span class="attr">status</span>=<span class="string">"error"</span> <span class="attr">monitorInterval</span>=<span class="string">"30"</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--全局参数--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">Properties</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">Property</span> <span class="attr">name</span>=<span class="string">"pattern"</span>&gt;</span>[%style&#123;%d&#125;&#123;bright,green&#125;][%highlight&#123;%p&#125;][%style&#123;%t&#125;&#123;bright,blue&#125;][%style&#123;%C.%M:%L&#125;&#123;bright,yellow&#125;]: %msg%n%style&#123;%throwable&#125;&#123;red&#125;<span class="tag">&lt;/<span class="name">Property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">Property</span> <span class="attr">name</span>=<span class="string">"logDir"</span>&gt;</span>$&#123;env:IM_HOME&#125;/logs<span class="tag">&lt;/<span class="name">Property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">Property</span> <span class="attr">name</span>=<span class="string">"disableAnsi"</span>&gt;</span>false<span class="tag">&lt;/<span class="name">Property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">Properties</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">Loggers</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">Root</span> <span class="attr">level</span>=<span class="string">"INFO"</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">AppenderRef</span> <span class="attr">ref</span>=<span class="string">"console"</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">AppenderRef</span> <span class="attr">ref</span>=<span class="string">"rolling_file"</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">Root</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">Loggers</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">Appenders</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 定义输出到控制台 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">Console</span> <span class="attr">name</span>=<span class="string">"console"</span> <span class="attr">target</span>=<span class="string">"SYSTEM_OUT"</span> <span class="attr">follow</span>=<span class="string">"true"</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!--控制台只输出level及以上级别的信息--&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">ThresholdFilter</span> <span class="attr">level</span>=<span class="string">"DEBUG"</span> <span class="attr">onMatch</span>=<span class="string">"ACCEPT"</span> <span class="attr">onMismatch</span>=<span class="string">"DENY"</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">PatternLayout</span> &gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">Pattern</span>&gt;</span>$&#123;pattern&#125;<span class="tag">&lt;/<span class="name">Pattern</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">PatternLayout</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">Console</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 同一来源的Appender可以定义多个RollingFile，定义按天存储日志 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">RollingFile</span> <span class="attr">name</span>=<span class="string">"rolling_file"</span></span></span><br><span class="line"><span class="tag">                     <span class="attr">fileName</span>=<span class="string">"$&#123;logDir&#125;/im-server.log"</span></span></span><br><span class="line"><span class="tag">                     <span class="attr">filePattern</span>=<span class="string">"$&#123;logDir&#125;/im-server_%d&#123;yyyy-MM-dd&#125;.log"</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">ThresholdFilter</span> <span class="attr">level</span>=<span class="string">"INFO"</span> <span class="attr">onMatch</span>=<span class="string">"ACCEPT"</span> <span class="attr">onMismatch</span>=<span class="string">"DENY"</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">PatternLayout</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">Pattern</span>&gt;</span>$&#123;pattern&#125;<span class="tag">&lt;/<span class="name">Pattern</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">PatternLayout</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">Policies</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">TimeBasedTriggeringPolicy</span> <span class="attr">interval</span>=<span class="string">"1"</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">Policies</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!-- 日志保留策略，配置只保留七天 --&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">DefaultRolloverStrategy</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">Delete</span> <span class="attr">basePath</span>=<span class="string">"$&#123;logDir&#125;/"</span> <span class="attr">maxDepth</span>=<span class="string">"1"</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">IfFileName</span> <span class="attr">glob</span>=<span class="string">"im-server_*.log"</span> /&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">IfLastModified</span> <span class="attr">age</span>=<span class="string">"7d"</span> /&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">Delete</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">DefaultRolloverStrategy</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">RollingFile</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">Appenders</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
-<h5 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h5><p>​        带着疑问上网查询报错，有的说是docker版本、centos 内核与k8s版本不兼容导致？</p>
-<p>​        依次查询了几台主机的docker版本(k8s是一起安装的所以直接排除)，都是19.03.5版本(centos版本也一致)。但仔细想想其他节点都没出现这个问题，可能问题原因不在这，暂时排除。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">Client: Docker Engine - Community</span><br><span class="line"> Version:           19.03.5</span><br><span class="line"> API version:       1.40</span><br><span class="line"> Go version:        go1.12.12</span><br><span class="line"> Git commit:        633a0ea</span><br><span class="line"> Built:             Wed Nov 13 07:25:41 2019</span><br><span class="line"> OS/Arch:           linux/amd64</span><br><span class="line"> Experimental:      false</span><br><span class="line"></span><br><span class="line">Server: Docker Engine - Community</span><br><span class="line"> Engine:</span><br><span class="line">  Version:          19.03.5</span><br><span class="line">  API version:      1.40 (minimum version 1.12)</span><br><span class="line">  Go version:       go1.12.12</span><br><span class="line">  Git commit:       633a0ea</span><br><span class="line">  Built:            Wed Nov 13 07:24:18 2019</span><br><span class="line">  OS/Arch:          linux/amd64</span><br><span class="line">  Experimental:     false</span><br><span class="line"> containerd:</span><br><span class="line">  Version:          1.2.6</span><br><span class="line">  GitCommit:        894b81a4b802e4eb2a91d1ce216b8817763c29fb</span><br><span class="line"> runc:</span><br><span class="line">  Version:          1.0.0-rc8</span><br><span class="line">  GitCommit:        425e105d5a03fabd737a126ad93d62a9eeede87f</span><br><span class="line"> docker-init:</span><br><span class="line">  Version:          0.18.0</span><br><span class="line">  GitCommit:        fec3683</span><br></pre></td></tr></table></figure>
-
-<p>​        问题困扰了一两天，后来看到一篇文章<a href="https://cloud.tencent.com/developer/article/1411527" target="_blank" rel="noopener">Kubernetes因限制内存配置引发的错误</a>给我启发，会不会是内存原因导致的问题。使用free 命令对比了两台节点的内存。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 问题节点</span></span><br><span class="line">[root@centos7-141 log]# free -g         </span><br><span class="line">              total        used        free      shared  buff/cache   available</span><br><span class="line">Mem:             22           1           0           1          20          12</span><br><span class="line">Swap:             0           0           0</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 正常节点</span></span><br><span class="line">[root@centos7-142 ~]# free -g</span><br><span class="line">              total        used        free      shared  buff/cache   available</span><br><span class="line">Mem:             22           2           9           1          10          15</span><br><span class="line">Swap:             0           0           0</span><br></pre></td></tr></table></figure>
-
-<p>等等，发现了一些端倪，为啥总计22g，只使用1g,剩余内存为啥是0？还有buff/cache 是啥？带着疑问，查询了 buff/cache,在这记录下。</p>
-<blockquote>
-<p>Linux服务器运行一段时间后，由于其内存管理机制，会将暂时不用的内存转为buff/cache，这样在程序使用到这一部分数据时，能够很快的取出，从而提高系统的运行效率，所以这也正是linux内存管理中非常出色的一点，所以乍一看内存剩余的非常少，但是在程序真正需要内存空间时，linux会将缓存让出给程序使用，这样达到对内存的最充分利用，所以真正剩余的内存是free+buff/cache</p>
-</blockquote>
-<p>在这里按照先解决的原则，按照操作步骤释放了buff/cache。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">echo 1 &gt; /proc/sys/vm/drop_caches</span><br><span class="line"><span class="meta">#</span><span class="bash">操作后的内存占用</span></span><br><span class="line">[root@centos7-141 log]# free -g</span><br><span class="line">              total        used        free      shared  buff/cache   available</span><br><span class="line">Mem:             22           1           7           1          13          12</span><br><span class="line">Swap:             0           0</span><br></pre></td></tr></table></figure>
-
-<p>重新创建pod，创建成功，问题解决！</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Name:         jupyter-lab1584951113027</span><br><span class="line">Namespace:    kubeflow</span><br><span class="line">Priority:     0</span><br><span class="line">Node:         centos7-141/192.168.128.141</span><br><span class="line">Start Time:   Tue, 24 Mar 2020 14:00:46 +0800</span><br><span class="line">Labels:       app=jupyterhub</span><br><span class="line">              component=singleuser-server</span><br><span class="line">              heritage=jupyterhub</span><br><span class="line">Annotations:  hub.jupyter.org/username: lab1584951113027</span><br><span class="line">Status:       Running</span><br><span class="line">IP:           10.244.3.3</span><br></pre></td></tr></table></figure>
-
-<h5 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h5><p>​        尽管问题解决了，但还是有两个疑问，在这里先记录下来</p>
+<p><strong>说明</strong></p>
 <ol>
-<li><p>buff/cache为啥没有在k8s需要内存时及时让出？</p>
-</li>
-<li><p>如果buff/cache没有及时让出缓存，为啥k8s events 不提示内存超出限制报错？</p>
-</li>
+<li>控制台日志高亮设置(IDE为IDEA),在启动主类VM options 中添加一行参数:-Dlog4j.skipJansi=false</li>
+<li>在logDir属性配置中可以通过启动类的环境变量(Environment variables)设置IM_HOME路径</li>
 </ol>
-<h5 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h5><p> <a href="https://cloud.tencent.com/developer/article/1411527" target="_blank" rel="noopener">Kubernetes因限制内存配置引发的错误</a></p>
-<p> <a href="https://www.cnblogs.com/freeweb/p/5713513.html" target="_blank" rel="noopener">Linux释放内存空间</a></p>
 
       
     </div>
@@ -394,7 +372,7 @@
     
     <li class="post-copyright-link hidden-xs">
       <strong>本文链接：</strong>
-      <a href="https://zhangjunjunah.github.io/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/" title="记录一次因内存原因导致k8s创建pod失败问题" target="_blank" rel="external">https://zhangjunjunah.github.io/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/</a>
+      <a href="https://zhangjunjunah.github.io/2020/04/20/Log4J2.xml%E8%87%AA%E7%94%A8%E9%85%8D%E7%BD%AE/" title="Log4J2.xml自用配置" target="_blank" rel="external">https://zhangjunjunah.github.io/2020/04/20/Log4J2.xml%E8%87%AA%E7%94%A8%E9%85%8D%E7%BD%AE/</a>
     </li>
     
     <li class="post-copyright-license">
@@ -440,13 +418,9 @@
   
   <ul class="pager pull-left">
     
-    <li class="prev">
-      <a href="/2020/03/31/spring%20AOP%E7%BB%93%E5%90%88%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B3%A8%E8%A7%A3%E5%AE%9E%E4%BE%8B/" title="Spring AOP结合自定义注解实例"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
-    </li>
-    
     
     <li class="next">
-      <a href="/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/" title="Ceph 配置RGW高可用"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+      <a href="/2020/03/31/spring%20AOP%E7%BB%93%E5%90%88%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B3%A8%E8%A7%A3%E5%AE%9E%E4%BE%8B/" title="Spring AOP结合自定义注解实例"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
     </li>
     
     

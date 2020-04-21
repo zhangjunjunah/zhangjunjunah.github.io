@@ -17,17 +17,19 @@
   <meta http-equiv="window-target" content="_top" />
   
   
-  <title>ceph和s3的安装 | Hexo</title>
+  <title>Ceph和s3的安装 | Hexo</title>
   <meta name="description" content="部署说明 安装的ceph版本（14.2.4）、s3 版本(2.0.2)  ceph使用ceph-deploy部署高可用集群至少需要3台节点(ceph 监视器需要3个以上节点)  ceph推荐使用裸盘安装osd(文件夹也可以部署，但不推荐) ceph部署节点规划   节点ip 节点主机名 节点ceph组件    192.168.153.51 centos 7-ceph-1（ceph 主节点） mds">
 <meta property="og:type" content="article">
-<meta property="og:title" content="ceph和s3的安装">
+<meta property="og:title" content="Ceph和s3的安装">
 <meta property="og:url" content="https://zhangjunjunah.github.io/2020/03/21/ceph%E5%92%8Cs3%E7%9A%84%E5%AE%89%E8%A3%85/index.html">
 <meta property="og:site_name" content="机锋小摩托的分享">
 <meta property="og:description" content="部署说明 安装的ceph版本（14.2.4）、s3 版本(2.0.2)  ceph使用ceph-deploy部署高可用集群至少需要3台节点(ceph 监视器需要3个以上节点)  ceph推荐使用裸盘安装osd(文件夹也可以部署，但不推荐) ceph部署节点规划   节点ip 节点主机名 节点ceph组件    192.168.153.51 centos 7-ceph-1（ceph 主节点） mds">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2020-03-21T07:57:15.240Z">
-<meta property="article:modified_time" content="2020-03-21T12:24:11.351Z">
+<meta property="article:published_time" content="2020-03-20T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-04-21T02:57:39.845Z">
 <meta property="article:author" content="机锋小摩托">
+<meta property="article:tag" content="Ceph">
+<meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary">
   <!-- Canonical links -->
   <link rel="canonical" href="https://zhangjunjunah.github.io/2020/03/21/ceph%E5%92%8Cs3%E7%9A%84%E5%AE%89%E8%A3%85/index.html">
@@ -190,15 +192,29 @@
 
     
       
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ceph/" rel="tag">Ceph</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/K8S/" rel="tag">K8S</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Log4J2/" rel="tag">Log4J2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
 
     
       
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/Ceph/" style="font-size: 14px;">Ceph</a> <a href="/tags/Docker/" style="font-size: 13px;">Docker</a> <a href="/tags/Java/" style="font-size: 13px;">Java</a> <a href="/tags/K8S/" style="font-size: 13px;">K8S</a> <a href="/tags/Linux/" style="font-size: 14px;">Linux</a> <a href="/tags/Log4J2/" style="font-size: 13px;">Log4J2</a> <a href="/tags/Spring/" style="font-size: 13px;">Spring</a>
+    </div>
+  </div>
+
     
       
   <div class="widget">
     <h3 class="widget-title">归档</h3>
     <div class="widget-body">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -217,10 +233,25 @@
                 
               </p>
               <p class="item-title">
-                <a href="/2020/03/31/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1spring%20AOP%E7%BB%93%E5%90%88%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B3%A8%E8%A7%A3%E5%AE%9E%E4%BE%8B/" class="title">记录一次spring AOP结合自定义注解实例</a>
+                <a href="/2020/04/20/Log4J2.xml%E8%87%AA%E7%94%A8%E9%85%8D%E7%BD%AE/" class="title">Log4J2.xml自用配置</a>
               </p>
               <p class="item-date">
-                <time datetime="2020-03-31T08:23:52.702Z" itemprop="datePublished">2020-03-31</time>
+                <time datetime="2020-04-20T13:53:40.000Z" itemprop="datePublished">2020-04-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2020/03/31/spring%20AOP%E7%BB%93%E5%90%88%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B3%A8%E8%A7%A3%E5%AE%9E%E4%BE%8B/" class="title">Spring AOP结合自定义注解实例</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-03-30T16:00:00.000Z" itemprop="datePublished">2020-03-31</time>
               </p>
             </div>
           </li>
@@ -235,7 +266,7 @@
                 <a href="/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/" class="title">记录一次因内存原因导致k8s创建pod失败问题</a>
               </p>
               <p class="item-date">
-                <time datetime="2020-03-24T06:06:19.534Z" itemprop="datePublished">2020-03-24</time>
+                <time datetime="2020-03-23T16:00:00.000Z" itemprop="datePublished">2020-03-24</time>
               </p>
             </div>
           </li>
@@ -247,10 +278,10 @@
                 
               </p>
               <p class="item-title">
-                <a href="/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/" class="title">ceph 配置 RGW高可用</a>
+                <a href="/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/" class="title">Ceph 配置RGW高可用</a>
               </p>
               <p class="item-date">
-                <time datetime="2020-03-21T09:07:59.386Z" itemprop="datePublished">2020-03-21</time>
+                <time datetime="2020-03-20T16:00:00.000Z" itemprop="datePublished">2020-03-21</time>
               </p>
             </div>
           </li>
@@ -262,10 +293,10 @@
                 
               </p>
               <p class="item-title">
-                <a href="/2020/03/21/ceph%E5%92%8Cs3%E7%9A%84%E5%AE%89%E8%A3%85/" class="title">ceph和s3的安装</a>
+                <a href="/2020/03/21/ceph%E5%92%8Cs3%E7%9A%84%E5%AE%89%E8%A3%85/" class="title">Ceph和s3的安装</a>
               </p>
               <p class="item-date">
-                <time datetime="2020-03-21T07:57:15.240Z" itemprop="datePublished">2020-03-21</time>
+                <time datetime="2020-03-20T16:00:00.000Z" itemprop="datePublished">2020-03-21</time>
               </p>
             </div>
           </li>
@@ -290,7 +321,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      ceph和s3的安装
+      Ceph和s3的安装
     </h1>
   
 
@@ -299,11 +330,16 @@
         <span class="article-date">
     <i class="icon icon-calendar-check"></i>
 	<a href="/2020/03/21/ceph%E5%92%8Cs3%E7%9A%84%E5%AE%89%E8%A3%85/" class="article-date">
-	  <time datetime="2020-03-21T07:57:15.240Z" itemprop="datePublished">2020-03-21</time>
+	  <time datetime="2020-03-20T16:00:00.000Z" itemprop="datePublished">2020-03-21</time>
 	</a>
 </span>
         
         
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/Ceph/" rel="tag">Ceph</a>, <a class="article-tag-link" href="/tags/Linux/" rel="tag">Linux</a>
+  </span>
+
 
         
 	<span class="article-read hidden-xs">
@@ -425,7 +461,7 @@
     
     <li class="post-copyright-link hidden-xs">
       <strong>本文链接：</strong>
-      <a href="https://zhangjunjunah.github.io/2020/03/21/ceph%E5%92%8Cs3%E7%9A%84%E5%AE%89%E8%A3%85/" title="ceph和s3的安装" target="_blank" rel="external">https://zhangjunjunah.github.io/2020/03/21/ceph%E5%92%8Cs3%E7%9A%84%E5%AE%89%E8%A3%85/</a>
+      <a href="https://zhangjunjunah.github.io/2020/03/21/ceph%E5%92%8Cs3%E7%9A%84%E5%AE%89%E8%A3%85/" title="Ceph和s3的安装" target="_blank" rel="external">https://zhangjunjunah.github.io/2020/03/21/ceph%E5%92%8Cs3%E7%9A%84%E5%AE%89%E8%A3%85/</a>
     </li>
     
     <li class="post-copyright-license">
@@ -472,7 +508,7 @@
   <ul class="pager pull-left">
     
     <li class="prev">
-      <a href="/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/" title="ceph 配置 RGW高可用"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+      <a href="/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/" title="Ceph 配置RGW高可用"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
     </li>
     
     
