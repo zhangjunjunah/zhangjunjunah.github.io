@@ -25,13 +25,13 @@
 <meta property="og:site_name" content="机锋小摩托的分享">
 <meta property="og:description" content="一、问题现象​    周一上午同事向我反馈说咱们的测试k8s集群kubectl 命令连接不上提示The connection to the server ip:6443 was refused - did you specify the right host or port?，之前也遇到过这个问题。当时刚刚开始使用k8s，上面还没有pv，为了避免耽误开发卸载重装了(心想这次怎么也得先分析下问题，有">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://zhangjunjunah.github.io/.io//%E4%B8%80%E6%AC%A1k8s-6443-%E7%AB%AF%E5%8F%A3-was-refused-%E8%A7%A3%E5%86%B3%E6%AD%A5%E9%AA%A4%E5%8F%8A%E6%80%9D%E8%B7%AF%5Cup-2d3ad1688c4e25d450d027623b18a635dfe.png">
+<meta property="og:image" content="https://zhangjunjunah.github.io/2020/10/25/%E4%B8%80%E6%AC%A1k8s-6443-%E7%AB%AF%E5%8F%A3-was-refused-%E8%A7%A3%E5%86%B3%E6%AD%A5%E9%AA%A4%E5%8F%8A%E6%80%9D%E8%B7%AF/%E4%B8%80%E6%AC%A1k8s-6443-%E7%AB%AF%E5%8F%A3-was-refused-%E8%A7%A3%E5%86%B3%E6%AD%A5%E9%AA%A4%E5%8F%8A%E6%80%9D%E8%B7%AF%5Cup-2d3ad1688c4e25d450d027623b18a635dfe.png">
 <meta property="article:published_time" content="2020-10-25T01:19:07.000Z">
-<meta property="article:modified_time" content="2020-10-25T04:41:56.509Z">
+<meta property="article:modified_time" content="2020-10-25T05:00:08.554Z">
 <meta property="article:author" content="机锋小摩托">
 <meta property="article:tag" content="K8S">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://zhangjunjunah.github.io/.io//%E4%B8%80%E6%AC%A1k8s-6443-%E7%AB%AF%E5%8F%A3-was-refused-%E8%A7%A3%E5%86%B3%E6%AD%A5%E9%AA%A4%E5%8F%8A%E6%80%9D%E8%B7%AF%5Cup-2d3ad1688c4e25d450d027623b18a635dfe.png">
+<meta name="twitter:image" content="https://zhangjunjunah.github.io/2020/10/25/%E4%B8%80%E6%AC%A1k8s-6443-%E7%AB%AF%E5%8F%A3-was-refused-%E8%A7%A3%E5%86%B3%E6%AD%A5%E9%AA%A4%E5%8F%8A%E6%80%9D%E8%B7%AF/%E4%B8%80%E6%AC%A1k8s-6443-%E7%AB%AF%E5%8F%A3-was-refused-%E8%A7%A3%E5%86%B3%E6%AD%A5%E9%AA%A4%E5%8F%8A%E6%80%9D%E8%B7%AF%5Cup-2d3ad1688c4e25d450d027623b18a635dfe.png">
   <!-- Canonical links -->
   <link rel="canonical" href="https://zhangjunjunah.github.io/2020/10/25/%E4%B8%80%E6%AC%A1k8s-6443-%E7%AB%AF%E5%8F%A3-was-refused-%E8%A7%A3%E5%86%B3%E6%AD%A5%E9%AA%A4%E5%8F%8A%E6%80%9D%E8%B7%AF/index.html">
   
@@ -376,7 +376,7 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">docker system prune </span><br><span class="line">docker image prune</span><br><span class="line">docker container prune</span><br><span class="line">docker volume prune </span><br><span class="line">docker network prune</span><br><span class="line">docker rmi $(docker images -q)</span><br></pre></td></tr></table></figure>
 
 <h4 id="3-导入基础镜像"><a href="#3-导入基础镜像" class="headerlink" title="3.导入基础镜像"></a>3.导入基础镜像</h4><p>​    到这里问题线索又断了，没办法再上网查查看看有没有类似的问题现象吧。在一篇blog中发现了类似的日志《<a href="https://my.oschina.net/comics/blog/3158924" target="_blank" rel="noopener">问题“The connection to the server….:6443 was refused - did you specify the right host or port?”的处理！</a>》。</p>
-<p><img src="/.io//%E4%B8%80%E6%AC%A1k8s-6443-%E7%AB%AF%E5%8F%A3-was-refused-%E8%A7%A3%E5%86%B3%E6%AD%A5%E9%AA%A4%E5%8F%8A%E6%80%9D%E8%B7%AF%5Cup-2d3ad1688c4e25d450d027623b18a635dfe.png" alt="img"></p>
+<p><img src="/2020/10/25/%E4%B8%80%E6%AC%A1k8s-6443-%E7%AB%AF%E5%8F%A3-was-refused-%E8%A7%A3%E5%86%B3%E6%AD%A5%E9%AA%A4%E5%8F%8A%E6%80%9D%E8%B7%AF/%E4%B8%80%E6%AC%A1k8s-6443-%E7%AB%AF%E5%8F%A3-was-refused-%E8%A7%A3%E5%86%B3%E6%AD%A5%E9%AA%A4%E5%8F%8A%E6%80%9D%E8%B7%AF%5Cup-2d3ad1688c4e25d450d027623b18a635dfe.png" alt="img"></p>
 <p>按照blog中的解决方法–重新导入基础镜像,问题解决！</p>
 <h3 id="三、问题总结"><a href="#三、问题总结" class="headerlink" title="三、问题总结"></a>三、问题总结</h3><ol>
 <li>​    基础镜像无故消失，导致问题产生。</li>
