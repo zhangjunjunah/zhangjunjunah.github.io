@@ -17,20 +17,23 @@
   <meta http-equiv="window-target" content="_top" />
   
   
-  <title>分类 | Hexo</title>
-  <meta name="description" content="个人学习及工作经验分享">
-<meta property="og:type" content="website">
-<meta property="og:title" content="分类">
-<meta property="og:url" content="https://zhangjunjunah.github.io/categories/index.html">
+  <title>在容器中提交yarn-client远端spark任务 | Hexo</title>
+  <meta name="description" content="spark在容器中提交yarn-client任务方案一：容器端口nodePort映射方式方案说明​    默认情况下， spark-submit 使用pod的 hostname 作为 spark.driver.host ，而 hostname 是pod的主机名，因此 spark executor 无法解析它，而且 spark.driver.port 也在pod（容器）的本地。此方案是通过端口映射方">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在容器中提交yarn-client远端spark任务">
+<meta property="og:url" content="https://zhangjunjunah.github.io/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/index.html">
 <meta property="og:site_name" content="机锋小摩托的分享">
-<meta property="og:description" content="个人学习及工作经验分享">
+<meta property="og:description" content="spark在容器中提交yarn-client任务方案一：容器端口nodePort映射方式方案说明​    默认情况下， spark-submit 使用pod的 hostname 作为 spark.driver.host ，而 hostname 是pod的主机名，因此 spark executor 无法解析它，而且 spark.driver.port 也在pod（容器）的本地。此方案是通过端口映射方">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2020-03-21T10:26:01.351Z">
-<meta property="article:modified_time" content="2020-03-21T10:26:01.351Z">
+<meta property="og:image" content="https://zhangjunjunah.github.io/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/E:%5Cself-improvement%5Cself-blog%5Csource_posts%5C%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1%5Cimage-20201109100107412.png">
+<meta property="article:published_time" content="2020-11-09T01:44:17.000Z">
+<meta property="article:modified_time" content="2020-11-10T01:54:27.795Z">
 <meta property="article:author" content="机锋小摩托">
+<meta property="article:tag" content="K8S">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zhangjunjunah.github.io/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/E:%5Cself-improvement%5Cself-blog%5Csource_posts%5C%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1%5Cimage-20201109100107412.png">
   <!-- Canonical links -->
-  <link rel="canonical" href="https://zhangjunjunah.github.io/categories/index.html">
+  <link rel="canonical" href="https://zhangjunjunah.github.io/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/index.html">
   
     <link rel="alternate" href="/atom.xml" title="机锋小摩托的分享" type="application/atom+xml">
   
@@ -309,24 +312,143 @@
 </aside>
 
   
-  <main class="main" role="main">
-  <article class="article article-categories article-type-list" itemscope="">
-    <header class="article-header">
-      <h1 itemprop="name" class="hidden-xs">分类</h1>
-      <p class="text-muted hidden-xs">共 0 个分类</p>
-      <nav role="navigation" id="nav-main" class="okayNav">
-        <ul>
-          <li><a href="/categories">All</a></li>
-          
-        </ul>
-      </nav>
-    </header>
-    <!-- /header -->
-    <div class="article-body">
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-在容器中提交yarn-client远端spark任务" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      在容器中提交yarn-client远端spark任务
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/" class="article-date">
+	  <time datetime="2020-11-09T01:44:17.000Z" itemprop="datePublished">2020-11-09</time>
+	</a>
+</span>
+        
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/K8S/" rel="tag">K8S</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="spark在容器中提交yarn-client任务"><a href="#spark在容器中提交yarn-client任务" class="headerlink" title="spark在容器中提交yarn-client任务"></a>spark在容器中提交yarn-client任务</h2><h3 id="方案一：容器端口nodePort映射方式"><a href="#方案一：容器端口nodePort映射方式" class="headerlink" title="方案一：容器端口nodePort映射方式"></a>方案一：容器端口nodePort映射方式</h3><h4 id="方案说明"><a href="#方案说明" class="headerlink" title="方案说明"></a>方案说明</h4><p>​    默认情况下， <code>spark-submit</code> 使用pod的 <code>hostname</code> 作为 <code>spark.driver.host</code> ，而 <code>hostname</code> 是pod的主机名，因此 <code>spark executor</code> 无法解析它，而且 <code>spark.driver.port</code> 也在pod（容器）的本地。此方案是通过端口映射方式连接yarn集群。</p>
+<ol>
+<li><p>创建deployement和service的同时，通过nodePort方式暴露spark.driver.port和spark.blockManager.port两个端口</p>
+</li>
+<li><p>spark-submit提交命令，添加参数</p>
+<p>–conf spark.driver.bindAddress=0.0.0.0 #固定值</p>
+<p>–conf spark.driver.host=$HOST_IP #k8s节点ip,可以固定为k8s master节点ip（非宿主节点）</p>
+<p>–conf spark.driver.port=$SPARK_DRIVER_PORT #通过nodePort暴露的端口</p>
+<p>–conf spark.driver.blockManager.port=$SPARK_DRIVER_PORT#通过nodePort暴露的端口</p>
+</li>
+</ol>
+<h3 id="方案二：hostNetwork模式"><a href="#方案二：hostNetwork模式" class="headerlink" title="方案二：hostNetwork模式"></a>方案二：hostNetwork模式</h3><h4 id="方案说明-1"><a href="#方案说明-1" class="headerlink" title="方案说明"></a>方案说明</h4><p>​    将pod修改为hostNetwork模式，容器可以使用宿主机的网络协议栈，复用宿主机的IP，可以监听端口，Spark也可以回调。</p>
+<h3 id="方案三：路由转发"><a href="#方案三：路由转发" class="headerlink" title="方案三：路由转发"></a>方案三：路由转发</h3><h4 id="方案说明-2"><a href="#方案说明-2" class="headerlink" title="方案说明"></a>方案说明</h4><p>​    之所以在容器内无法提交spark yarn-client任务，是因为容器内网与hadoop集群不互通，只要想办法解决网络互通，问题自然而然就解决了。下面是我们测试环境的网络转发图。</p>
+<p><img src="/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/E:%5Cself-improvement%5Cself-blog%5Csource_posts%5C%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1%5Cimage-20201109100107412.png" alt="image-20201109100107412"></p>
+<h3 id="参考blog"><a href="#参考blog" class="headerlink" title="参考blog"></a>参考blog</h3><p><a href="https://www.jianshu.com/p/ba7d1658c7f4" target="_blank" rel="noopener">在Kubernetes的pod中使用yarn-client调用远端spark集群</a><br><a href="http://www.longant.cn/index.php/zh-hans/node/1121" target="_blank" rel="noopener">Spark/k8s：如何用客户机模式在Kubernetes上运行Spark提交</a><br><a href="https://blog.csdn.net/csdn1115698735/article/details/100598230" target="_blank" rel="noopener">k8s骚操作 Pod服务通过IP对外访问&amp;k8s指定IP创建Pod</a></p>
+
       
     </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://zhangjunjunah.github.io/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/" title="在容器中提交yarn-client远端spark任务" target="_blank" rel="external">https://zhangjunjunah.github.io/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/zhangjunjunah" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/zhangjunjunah" target="_blank"><span class="text-dark">机锋小摩托</span><small class="ml-1x">Web 开发 &amp; 设计</small></a></h3>
+        <div>积极向上，热爱生活。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
   </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="uyan_frame"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    
+    <li class="next">
+      <a href="/2020/10/25/%E4%B8%80%E6%AC%A1k8s-6443-%E7%AB%AF%E5%8F%A3-was-refused-%E8%A7%A3%E5%86%B3%E6%AD%A5%E9%AA%A4%E5%8F%8A%E6%80%9D%E8%B7%AF/" title="一次k8s 6443 端口 was refused 解决步骤及思路"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
 </main>
+
   <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
 	
 	
@@ -386,6 +508,18 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
 </script>
 
 
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+    <script defer type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=[object Object]"></script>
 
 
 
