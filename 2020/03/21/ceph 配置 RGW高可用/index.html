@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Ceph 配置RGW高可用 | Hexo</title>
+  <meta name="description" content="ceph节点规划   节点ip 节点主机名 节点ceph组件 其他相关组件    192.168.153.51 centos 7-ceph-1（ceph 主节点） mds1、mon1、mg1、rgw1、osd1 keepalived   192.168.153.52 centos 7-ceph-2 mon2、mg2、rgw2、osd2 keepalived   192.168.153.53 cen">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ceph 配置RGW高可用">
+<meta property="og:url" content="https://zhangjunjunah.github.io/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/index.html">
+<meta property="og:site_name" content="机锋小摩托的分享">
+<meta property="og:description" content="ceph节点规划   节点ip 节点主机名 节点ceph组件 其他相关组件    192.168.153.51 centos 7-ceph-1（ceph 主节点） mds1、mon1、mg1、rgw1、osd1 keepalived   192.168.153.52 centos 7-ceph-2 mon2、mg2、rgw2、osd2 keepalived   192.168.153.53 cen">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zhangjunjunah.github.io/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/..%5Cimg%5Ckeepalived-rgw.png">
+<meta property="article:published_time" content="2020-03-20T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-04-21T02:57:39.844Z">
+<meta property="article:author" content="机锋小摩托">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Ceph">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zhangjunjunah.github.io/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/..%5Cimg%5Ckeepalived-rgw.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://zhangjunjunah.github.io/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="机锋小摩托的分享" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body class="main-center theme-white" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/zhangjunjunah" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">机锋小摩托</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Web 开发 &amp; 设计</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> HeFei, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-books">
+          <a href="/books">
+            
+            <i class="icon icon-book-fill"></i>
+            
+            <span class="menu-title">书单</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/cofess" target="_blank" title="Github" ><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ceph/" rel="tag">Ceph</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/K8S/" rel="tag">K8S</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Log4J2/" rel="tag">Log4J2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyterlab/" rel="tag">jupyterlab</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/" rel="tag">spark</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/Ceph/" style="font-size: 13.5px;">Ceph</a> <a href="/tags/Docker/" style="font-size: 14px;">Docker</a> <a href="/tags/Java/" style="font-size: 13.5px;">Java</a> <a href="/tags/K8S/" style="font-size: 14px;">K8S</a> <a href="/tags/Linux/" style="font-size: 14px;">Linux</a> <a href="/tags/Log4J2/" style="font-size: 13px;">Log4J2</a> <a href="/tags/Nginx/" style="font-size: 13px;">Nginx</a> <a href="/tags/Spring/" style="font-size: 13px;">Spring</a> <a href="/tags/jupyterlab/" style="font-size: 13px;">jupyterlab</a> <a href="/tags/spark/" style="font-size: 13px;">spark</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/10/">十月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/06/">六月 2021</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/12/29/jupyterlab%E4%B8%AA%E6%80%A7%E5%8C%96%E5%BC%80%E5%8F%91%E5%8F%8A%E9%85%8D%E7%BD%AE-%E5%88%9D%E7%BA%A7%E7%AF%87/" class="title">jupyterlab个性化开发及配置(初级篇)</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-12-29T02:06:57.000Z" itemprop="datePublished">2021-12-29</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/12/10/linux-bashrc-bash-profile%E5%82%BB%E5%82%BB%E5%88%86%E4%B8%8D%E6%B8%85/" class="title">linux .bashrc ~/.bash_profile傻傻分不清</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-12-10T02:19:52.000Z" itemprop="datePublished">2021-12-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/12/10/linux%20buffcache%E7%9A%84%E9%82%A3%E4%BA%9B%E4%BA%8B%E5%84%BF/" class="title">linux buff/cache的那些事儿</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-12-10T01:57:02.000Z" itemprop="datePublished">2021-12-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/10/17/Nginx%20location%E6%96%9C%E6%9D%A0%E9%85%8D%E7%BD%AE%E5%B0%8F%E7%BB%93/" class="title">Nginx location斜杠配置小结</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-10-17T12:30:41.000Z" itemprop="datePublished">2021-10-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/" class="title">Linux文件系统小结</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-06-26T08:08:41.000Z" itemprop="datePublished">2021-06-26</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-ceph 配置 RGW高可用" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Ceph 配置RGW高可用
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/" class="article-date">
+	  <time datetime="2020-03-20T16:00:00.000Z" itemprop="datePublished">2020-03-21</time>
+	</a>
+</span>
+        
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/Ceph/" rel="tag">Ceph</a>, <a class="article-tag-link" href="/tags/Linux/" rel="tag">Linux</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h4 id="ceph节点规划"><a href="#ceph节点规划" class="headerlink" title="ceph节点规划"></a>ceph节点规划</h4><table>
+<thead>
+<tr>
+<th>节点ip</th>
+<th>节点主机名</th>
+<th>节点ceph组件</th>
+<th>其他相关组件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>192.168.153.51</td>
+<td>centos 7-ceph-1（ceph 主节点）</td>
+<td>mds1、mon1、mg1、rgw1、osd1</td>
+<td>keepalived</td>
+</tr>
+<tr>
+<td>192.168.153.52</td>
+<td>centos 7-ceph-2</td>
+<td>mon2、mg2、rgw2、osd2</td>
+<td>keepalived</td>
+</tr>
+<tr>
+<td>192.168.153.53</td>
+<td>centos 7-ceph-3</td>
+<td>mon3、mg3、osd3</td>
+<td></td>
+</tr>
+</tbody></table>
+<h4 id="整体架构"><a href="#整体架构" class="headerlink" title="整体架构"></a>整体架构</h4><p><img src="/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/..%5Cimg%5Ckeepalived-rgw.png" alt></p>
+<p>新增RGW服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">在centos 7-ceph-1节点使用cephuser用户</span></span><br><span class="line">cd my-cluster</span><br><span class="line">ceph-deploy rgw create  128</span><br><span class="line"><span class="meta">#</span><span class="bash"> 访问测试</span></span><br><span class="line">curl -I http://centos 7-ceph-1:7480/</span><br><span class="line"></span><br><span class="line">HTTP/1.1 200 OK</span><br><span class="line">x-amz-request-id: tx000000000000000000001-005d0b0e2a-1018-default</span><br><span class="line">Content-Type: application/xml</span><br><span class="line">Content-Length: 0</span><br><span class="line">Date: Thu, 20 Jun 2019 04:40:11 GMT</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="安装相关软件"><a href="#安装相关软件" class="headerlink" title="安装相关软件"></a>安装相关软件</h4><h5 id="安装依赖"><a href="#安装依赖" class="headerlink" title="安装依赖"></a>安装依赖</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">在centos 7-ceph-1、centos 7-ceph-2节点使用root用户执行</span></span><br><span class="line">yum -y install openssl-devel --skip-broken</span><br><span class="line">yum install -y libnl3-devel libnfnetlink-devel</span><br><span class="line">yum -y install gcc</span><br></pre></td></tr></table></figure>
+
+<h5 id="安装keepalived"><a href="#安装keepalived" class="headerlink" title="安装keepalived"></a>安装keepalived</h5> <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">在centos 7-ceph-1、centos 7-ceph-2节点使用root用户执行</span></span><br><span class="line">cd /usr/local/src</span><br><span class="line"><span class="meta">#</span><span class="bash">官网下载keepalived的最新版本，解压并安装</span></span><br><span class="line">wget http://www.keepalived.org/software/keepalived-2.0.7.tar.gz</span><br><span class="line">tar xvf keepalived-2.0.7.tar.gz</span><br><span class="line">cd keepalived-2.0.7</span><br><span class="line">./configure --prefix=/usr/local/keepalived</span><br><span class="line">make &amp;&amp; make install</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">初始化及启动</span></span><br><span class="line"><span class="meta">#</span><span class="bash">keepalived启动脚本变量引用文件，默认文件路径是/etc/sysconfig/，也可以不做软链接，直接修改启动脚本中文件路径即可（安装目录下）</span></span><br><span class="line">cp /usr/local/keepalived/etc/sysconfig/keepalived  /etc/sysconfig/keepalived </span><br><span class="line"><span class="meta">#</span><span class="bash"> 将keepalived主程序加入到环境变量（安装目录下）</span></span><br><span class="line">cp /usr/local/keepalived/sbin/keepalived /usr/sbin/keepalived</span><br><span class="line"><span class="meta">#</span><span class="bash"> keepalived启动脚本（源码目录下），放到/etc/init.d/目录下就可以使用service命令便捷调用</span></span><br><span class="line">cp /usr/local/src/keepalived-2.0.7/keepalived/etc/init.d/keepalived  /etc/init.d/keepalived  </span><br><span class="line"><span class="meta">#</span><span class="bash"> 将配置文件放到默认路径下</span></span><br><span class="line">mkdir /etc/keepalived</span><br><span class="line">cp /usr/local/keepalived/etc/keepalived/keepalived.conf etc/keepalived/keepalived.conf</span><br></pre></td></tr></table></figure>
+
+<h5 id="keepalived-conf配置"><a href="#keepalived-conf配置" class="headerlink" title="keepalived.conf配置"></a>keepalived.conf配置</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">centos 7-ceph-1节点</span></span><br><span class="line">cp /etc/keepalived/keepalived.conf /etc/keepalived/keepalived.conf.bak</span><br><span class="line">cat /etc/keepalived/keepalived.conf</span><br><span class="line">! Configuration File for keepalived</span><br><span class="line"></span><br><span class="line">global_defs &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">vrrp_script chk_rgw &#123;</span><br><span class="line">    script "/usr/local/keepalived/sbin/check_rgw.sh"    # 该脚本检测rgw的运行状态，并在rgw进程挂了之后尝试重新启动rgw，如果启动失败则停止keepalived，准备让其它机器接管。</span><br><span class="line">    interval 2    # 每2s检测一次</span><br><span class="line">    weight 2    # 检测失败（脚本返回非0）则优先级2</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">vrrp_instance VI_1 &#123;</span><br><span class="line">    state MASTER # 指定keepalived的角色，MASTER表示此主机是主服务器，BACKUP表示此主机是备用服务器</span><br><span class="line">    interface ens32  # 指定HA监测网络的接口 根据你实际的网卡名来 keyong ip addr 查询</span><br><span class="line">    virtual_router_id 51 # 虚拟路由标识，这个标识是一个数字，同一个vrrp实例使用唯一的标识。即同一vrrp_instance下，MASTER和BACKUP必须是一致的</span><br><span class="line">    priority 100  # 定义优先级，数字越大，优先级越高，在同一个vrrp_instance下，MASTER的优先级必须大于BACKUP的优先级</span><br><span class="line">    advert_int 1  # 设定MASTER与BACKUP负载均衡器之间同步检查的时间间隔，单位是秒</span><br><span class="line">    authentication &#123;</span><br><span class="line">        auth_type PASS # 设置验证类型，主要有PASS和AH两种</span><br><span class="line">        auth_pass 1111 # 设置验证密码，在同一个vrrp_instance下，MASTER与BACKUP必须使用相同的密码才能正常通信</span><br><span class="line">    &#125;</span><br><span class="line">    virtual_ipaddress &#123;</span><br><span class="line">        192.168.153.16 # 设置虚拟IP地址(与节点ip同网段)</span><br><span class="line">    &#125;</span><br><span class="line">    track_script &#123;</span><br><span class="line">        chk_rgw    # 引用VRRP脚本，即在 vrrp_script 部分指定的名字。定期运行它们来改变优先级，并最终引发主备切换。</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">centos 7-ceph-2节点</span></span><br><span class="line">cp /etc/keepalived/keepalived.conf /etc/keepalived/keepalived.conf.bak</span><br><span class="line">cat /etc/keepalived/keepalived.conf</span><br><span class="line">! Configuration File for keepalived</span><br><span class="line"></span><br><span class="line">global_defs &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">vrrp_script chk_rgw &#123;</span><br><span class="line">    script "/usr/local/keepalived/sbin/check_rgw.sh"    # 该脚本检测rgw的运行状态，并在rgw进程挂了之后尝试重新启动rgw，如果启动失败则停止keepalived，准备让其它机器接管。</span><br><span class="line">    interval 2    # 每2s检测一次</span><br><span class="line">    weight 2    # 检测失败（脚本返回非0）则优先级2</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">vrrp_instance VI_1 &#123;</span><br><span class="line">    state BACKUP # 指定keepalived的角色，MASTER表示此主机是主服务器，BACKUP表示此主机是备用服务器</span><br><span class="line">    interface ens32  # 指定HA监测网络的接口 根据你实际的网卡名来 keyong ip addr 查询</span><br><span class="line">    virtual_router_id 51 # 虚拟路由标识，这个标识是一个数字，同一个vrrp实例使用唯一的标识。即同一vrrp_instance下，MASTER和BACKUP必须是一致的</span><br><span class="line">    priority 100  # 定义优先级，数字越大，优先级越高，在同一个vrrp_instance下，MASTER的优先级必须大于BACKUP的优先级</span><br><span class="line">    advert_int 1  # 设定MASTER与BACKUP负载均衡器之间同步检查的时间间隔，单位是秒</span><br><span class="line">    authentication &#123;</span><br><span class="line">        auth_type PASS # 设置验证类型，主要有PASS和AH两种</span><br><span class="line">        auth_pass 1111 # 设置验证密码，在同一个vrrp_instance下，MASTER与BACKUP必须使用相同的密码才能正常通信</span><br><span class="line">    &#125;</span><br><span class="line">    virtual_ipaddress &#123;</span><br><span class="line">        192.168.153.16 # 设置虚拟IP地址(与节点ip同网段)</span><br><span class="line">    &#125;</span><br><span class="line">    track_script &#123;</span><br><span class="line">        chk_rgw    # 引用VRRP脚本，即在 vrrp_script 部分指定的名字。定期运行它们来改变优先级，并最终引发主备切换。</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>centos 7-ceph-1/2 中，/usr/local/keepalived/sbin/check_rgw.sh脚本内容如下</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line">if [ "$(ps -ef | grep "radosgw"| grep -v grep )" == "" ];then</span><br><span class="line">    systemctl start ceph-radosgw.target </span><br><span class="line">    sleep 3</span><br><span class="line"></span><br><span class="line">    if [ "$(ps -ef | grep "radosgw"| grep -v grep )" == "" ];then</span><br><span class="line">        systemctl stop keepalived</span><br><span class="line">    fi</span><br><span class="line">fi</span><br><span class="line"><span class="meta">#</span><span class="bash">添加check_rgw.sh脚本执行权限</span></span><br><span class="line">chmod +x /usr/local/keepalived/sbin/check_rgw.sh</span><br></pre></td></tr></table></figure>
+
+<p><strong>到这里对keepalived的配置已经完成，然后分别启动centos 7-ceph-1/2点上的keepalived</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl start keepalived</span><br></pre></td></tr></table></figure>
+
+<p>分别在centos 7-ceph-1和centos 7-ceph-2节点上执行<code>ip a</code>命令，查看虚IP信息：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">centos 7-ceph-1</span></span><br><span class="line">1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000</span><br><span class="line">    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00</span><br><span class="line">    inet 127.0.0.1/8 scope host lo</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 ::1/128 scope host </span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">2: ens32: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000</span><br><span class="line">    link/ether 00:0c:29:67:df:45 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 192.168.153.51/24 brd 192.168.129.255 scope global noprefixroute ens32</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet 192.168.153.16/32 scope global ens32</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::388c:a9c2:c50b:dd48/64 scope link noprefixroute </span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">centos 7-ceph-2</span></span><br><span class="line">1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000</span><br><span class="line">    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00</span><br><span class="line">    inet 127.0.0.1/8 scope host lo</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 ::1/128 scope host </span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">2: ens32: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000</span><br><span class="line">    link/ether 00:0c:29:4c:7f:2a brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 192.168.153.52/24 brd 192.168.129.255 scope global noprefixroute ens32</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::58cc:e799:bc61:7fd5/64 scope link noprefixroute </span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure>
+
+<h4 id="调整S3配置"><a href="#调整S3配置" class="headerlink" title="调整S3配置"></a>调整S3配置</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">[cephuser@centos 7-ceph-1 keepalived-2.0.7]$ s3cmd --configure</span><br><span class="line"></span><br><span class="line">Enter new values or accept defaults in brackets with Enter.</span><br><span class="line">Refer to user manual for detailed description of all options.</span><br><span class="line"></span><br><span class="line">Access key and Secret key are your identifiers for Amazon S3. Leave them empty for using the env variables.</span><br><span class="line">Access Key [AY96HNDL9H2QV2SRPNDJ]: </span><br><span class="line">Secret Key [Q8OhUOJdRJg8KzAUwZ22BddL7QbC6g8hHCGwq1jx]: </span><br><span class="line">Default Region [US]: </span><br><span class="line"></span><br><span class="line">Use "s3.amazonaws.com" for S3 Endpoint and not modify it to the target Amazon S3.</span><br><span class="line">S3 Endpoint [192.168.153.51:7480]: 192.168.153.16:7480</span><br><span class="line"></span><br><span class="line">Use "%(bucket)s.s3.amazonaws.com" to the target Amazon S3. "%(bucket)s" and "%(location)s" vars can be used</span><br><span class="line">if the target S3 system supports dns based buckets.</span><br><span class="line">DNS-style bucket+hostname:port template for accessing a bucket [192.168.153.51:7480]: 192.168.153.16:7480</span><br><span class="line"></span><br><span class="line">Encryption password is used to protect your files from reading</span><br><span class="line">by unauthorized persons while in transfer to S3</span><br><span class="line">Encryption password: </span><br><span class="line">Path to GPG program [/bin/gpg]: </span><br><span class="line"></span><br><span class="line">When using secure HTTPS protocol all communication with Amazon S3</span><br><span class="line">servers is protected from 3rd party eavesdropping. This method is</span><br><span class="line">slower than plain HTTP, and can only be proxied with Python 2.7 or newer</span><br><span class="line">Use HTTPS protocol [No]: </span><br><span class="line"></span><br><span class="line">On some networks all internet access must go through a HTTP proxy.</span><br><span class="line">Try setting it here if you can't connect to S3 directly</span><br><span class="line">HTTP Proxy server name: </span><br><span class="line"></span><br><span class="line">New settings:</span><br><span class="line">  Access Key: AY96HNDL9H2QV2SRPNDJ</span><br><span class="line">  Secret Key: Q8OhUOJdRJg8KzAUwZ22BddL7QbC6g8hHCGwq1jx</span><br><span class="line">  Default Region: US</span><br><span class="line">  S3 Endpoint: 192.168.153.16:7480</span><br><span class="line">  DNS-style bucket+hostname:port template for accessing a bucket: 192.168.153.16:7480</span><br><span class="line">  Encryption password: </span><br><span class="line">  Path to GPG program: /bin/gpg</span><br><span class="line">  Use HTTPS protocol: False</span><br><span class="line">  HTTP Proxy server name: </span><br><span class="line">  HTTP Proxy server port: 0</span><br><span class="line"></span><br><span class="line">Test access with supplied credentials? [Y/n] y</span><br><span class="line">Please wait, attempting to list all buckets...</span><br><span class="line">Success. Your access key and secret key worked fine :-)</span><br><span class="line"></span><br><span class="line">Now verifying that encryption works...</span><br><span class="line">Not configured. Never mind.</span><br><span class="line"></span><br><span class="line">Save settings? [y/N] y</span><br><span class="line">Configuration saved to '/home/cephuser/.s3cfg'</span><br><span class="line">[cephuser@centos 7-ceph-1 keepalived-2.0.7]$ s3cmd ls</span><br><span class="line">2020-03-11 07:16  s3://MyBucket_1</span><br><span class="line">2020-03-11 07:45  s3://algorithm-bucket</span><br><span class="line">2020-03-11 07:44  s3://demo-bucket</span><br></pre></td></tr></table></figure>
+
+<h4 id="参考引用"><a href="#参考引用" class="headerlink" title="参考引用"></a>参考引用</h4><p><a href="https://ypdai.github.io/2018/04/10/keepalived+RGW/" target="_blank" rel="noopener">keepalived配置RGW高可用</a></p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://zhangjunjunah.github.io/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/" title="Ceph 配置RGW高可用" target="_blank" rel="external">https://zhangjunjunah.github.io/2020/03/21/ceph%20%E9%85%8D%E7%BD%AE%20RGW%E9%AB%98%E5%8F%AF%E7%94%A8/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/zhangjunjunah" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/zhangjunjunah" target="_blank"><span class="text-dark">机锋小摩托</span><small class="ml-1x">Web 开发 &amp; 设计</small></a></h3>
+        <div>积极向上，热爱生活。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="uyan_frame"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2020/03/24/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E5%9B%A0%E5%86%85%E5%AD%98%E5%8E%9F%E5%9B%A0%E5%AF%BC%E8%87%B4k8s%E5%88%9B%E5%BB%BApod%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98/" title="记录一次因内存原因导致k8s创建pod失败问题"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2020/03/21/ceph%E5%92%8Cs3%E7%9A%84%E5%AE%89%E8%A3%85/" title="Ceph和s3的安装"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/cofess" target="_blank" title="Github" ><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+    <script>
+(function ($) {
+    $('.search-form').on('submit', function (e) {
+        var keyword = $('.search-form-input[name="wd"]').val();
+        window.location = 'https://www.baidu.com/s?wd=site:zhangjunjunah.github.io ' + keyword;
+        return false;
+    });
+})(jQuery);
+</script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+    <script defer type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=[object Object]"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

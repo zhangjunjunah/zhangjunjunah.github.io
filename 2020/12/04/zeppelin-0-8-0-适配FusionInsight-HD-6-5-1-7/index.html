@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>zeppelin 0.8.0 适配FusionInsight_HD_6.5.1.7 | Hexo</title>
+  <meta name="description" content="适配背景​        最近客户的华为集群升级到6.5.1.7，我们安装的zeppelin又不好使了。。。 适配方法​    适配方法参考一篇blog，在这里列出主要步骤 ​    1.将&#x2F;opt&#x2F;hadoopclient&#x2F;Spark2x&#x2F;spark&#x2F;jars路径下所有的jar包拷贝至&#x2F;usr&#x2F;zeppelin&#x2F;interpreter&#x2F;spark 1cp &#x2F;opt&#x2F;hadoo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="zeppelin 0.8.0 适配FusionInsight_HD_6.5.1.7">
+<meta property="og:url" content="https://zhangjunjunah.github.io/2020/12/04/zeppelin-0-8-0-%E9%80%82%E9%85%8DFusionInsight-HD-6-5-1-7/index.html">
+<meta property="og:site_name" content="机锋小摩托的分享">
+<meta property="og:description" content="适配背景​        最近客户的华为集群升级到6.5.1.7，我们安装的zeppelin又不好使了。。。 适配方法​    适配方法参考一篇blog，在这里列出主要步骤 ​    1.将&#x2F;opt&#x2F;hadoopclient&#x2F;Spark2x&#x2F;spark&#x2F;jars路径下所有的jar包拷贝至&#x2F;usr&#x2F;zeppelin&#x2F;interpreter&#x2F;spark 1cp &#x2F;opt&#x2F;hadoo">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-12-03T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-04T09:38:52.847Z">
+<meta property="article:author" content="机锋小摩托">
+<meta property="article:tag" content="spark">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://zhangjunjunah.github.io/2020/12/04/zeppelin-0-8-0-%E9%80%82%E9%85%8DFusionInsight-HD-6-5-1-7/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="机锋小摩托的分享" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body class="main-center theme-white" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/zhangjunjunah" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">机锋小摩托</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Web 开发 &amp; 设计</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> HeFei, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-books">
+          <a href="/books">
+            
+            <i class="icon icon-book-fill"></i>
+            
+            <span class="menu-title">书单</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/cofess" target="_blank" title="Github" ><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ceph/" rel="tag">Ceph</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/K8S/" rel="tag">K8S</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Log4J2/" rel="tag">Log4J2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyterlab/" rel="tag">jupyterlab</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/" rel="tag">spark</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/Ceph/" style="font-size: 13.5px;">Ceph</a> <a href="/tags/Docker/" style="font-size: 14px;">Docker</a> <a href="/tags/Java/" style="font-size: 13.5px;">Java</a> <a href="/tags/K8S/" style="font-size: 14px;">K8S</a> <a href="/tags/Linux/" style="font-size: 14px;">Linux</a> <a href="/tags/Log4J2/" style="font-size: 13px;">Log4J2</a> <a href="/tags/Nginx/" style="font-size: 13px;">Nginx</a> <a href="/tags/Spring/" style="font-size: 13px;">Spring</a> <a href="/tags/jupyterlab/" style="font-size: 13px;">jupyterlab</a> <a href="/tags/spark/" style="font-size: 13px;">spark</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/10/">十月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/06/">六月 2021</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/12/29/jupyterlab%E4%B8%AA%E6%80%A7%E5%8C%96%E5%BC%80%E5%8F%91%E5%8F%8A%E9%85%8D%E7%BD%AE-%E5%88%9D%E7%BA%A7%E7%AF%87/" class="title">jupyterlab个性化开发及配置(初级篇)</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-12-29T02:06:57.000Z" itemprop="datePublished">2021-12-29</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/12/10/linux-bashrc-bash-profile%E5%82%BB%E5%82%BB%E5%88%86%E4%B8%8D%E6%B8%85/" class="title">linux .bashrc ~/.bash_profile傻傻分不清</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-12-10T02:19:52.000Z" itemprop="datePublished">2021-12-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/12/10/linux%20buffcache%E7%9A%84%E9%82%A3%E4%BA%9B%E4%BA%8B%E5%84%BF/" class="title">linux buff/cache的那些事儿</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-12-10T01:57:02.000Z" itemprop="datePublished">2021-12-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/10/17/Nginx%20location%E6%96%9C%E6%9D%A0%E9%85%8D%E7%BD%AE%E5%B0%8F%E7%BB%93/" class="title">Nginx location斜杠配置小结</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-10-17T12:30:41.000Z" itemprop="datePublished">2021-10-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/" class="title">Linux文件系统小结</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-06-26T08:08:41.000Z" itemprop="datePublished">2021-06-26</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-zeppelin-0-8-0-适配FusionInsight-HD-6-5-1-7" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      zeppelin 0.8.0 适配FusionInsight_HD_6.5.1.7
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/12/04/zeppelin-0-8-0-%E9%80%82%E9%85%8DFusionInsight-HD-6-5-1-7/" class="article-date">
+	  <time datetime="2020-12-03T16:00:00.000Z" itemprop="datePublished">2020-12-04</time>
+	</a>
+</span>
+        
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/spark/" rel="tag">spark</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/12/04/zeppelin-0-8-0-%E9%80%82%E9%85%8DFusionInsight-HD-6-5-1-7/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h4 id="适配背景"><a href="#适配背景" class="headerlink" title="适配背景"></a>适配背景</h4><p>​        最近客户的华为集群升级到6.5.1.7，我们安装的zeppelin又不好使了。。。</p>
+<h4 id="适配方法"><a href="#适配方法" class="headerlink" title="适配方法"></a>适配方法</h4><p>​    适配方法参考一篇blog，在这里列出主要步骤</p>
+<p>​    1.将<code>/opt/hadoopclient/Spark2x/spark/jars</code>路径下所有的jar包拷贝至<code>/usr/zeppelin/interpreter/spark</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp &#x2F;opt&#x2F;hadoopclient&#x2F;Spark2x&#x2F;spark&#x2F;jars&#x2F;*.jar &#x2F;usr&#x2F;zeppelin&#x2F;interpreter&#x2F;spark&#x2F;</span><br></pre></td></tr></table></figure>
+
+<p>​    2.编辑zeppelin-env.sh文件，位置<code>/usr/zeppelin/conf</code>，加入以下内容</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME&#x3D;&#x2F;opt&#x2F;hadoopclient&#x2F;JDK&#x2F;jdk-8u201</span><br><span class="line">export MASTER&#x3D;yarn-client</span><br><span class="line">export SPARK_HOME&#x3D;&#x2F;opt&#x2F;hadoopclient&#x2F;Spark2x&#x2F;spark</span><br><span class="line">export HADOOP_CONF_DIR&#x3D;&#x2F;opt&#x2F;hadoopclient&#x2F;HDFS&#x2F;hadoop&#x2F;etc&#x2F;hadoop</span><br></pre></td></tr></table></figure>
+
+<p>步骤比较简单，测试提交到yarn集群，却提示(这个问题困扰了我几天。。。)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">java.lang.ClassCastException: org.apache.hadoop.conf.Configuration cannot be cast to org.apache.hadoop.yarn.conf.YarnConfiguration</span><br><span class="line">	at org.apache.spark.deploy.yarn.ApplicationMaster.&lt;init&gt;(ApplicationMaster.scala:60)</span><br><span class="line">	at org.apache.spark.deploy.yarn.ApplicationMaster$$anonfun$main$1.apply$mcV$sp(ApplicationMaster.scala:679)</span><br><span class="line">	at org.apache.spark.deploy.SparkHadoopUtil$$anon$1.run(SparkHadoopUtil.scala:69)</span><br><span class="line">	at org.apache.spark.deploy.SparkHadoopUtil$$anon$1.run(SparkHadoopUtil.scala:68)</span><br><span class="line">	at java.security.AccessController.doPrivileged(Native Method)</span><br><span class="line">	at javax.security.auth.Subject.doAs(Subject.java:422)</span><br><span class="line">	at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1917)</span><br><span class="line">	at org.apache.spark.deploy.SparkHadoopUtil.runAsSparkUser(SparkHadoopUtil.scala:68)</span><br><span class="line">	at org.apache.spark.deploy.yarn.ApplicationMaster$.main(ApplicationMaster.scala:678)</span><br><span class="line">	at org.apache.spark.deploy.yarn.ApplicationMaster.main(ApplicationMaster.scala)</span><br></pre></td></tr></table></figure>
+
+<p>下面给出我这边解决方法</p>
+<h4 id="适配问题解决"><a href="#适配问题解决" class="headerlink" title="适配问题解决"></a>适配问题解决</h4><p>网上提示这个报错的解决方法</p>
+<blockquote>
+<p>由于环境中版本不一致导致，需要确保环境中spark版本和hadoop版本为匹配版本：</p>
+<p>1.确认spark版本与hadoop版本一致。</p>
+<p>2.如果是spark on yarn，同时确认spark配置文件中的spark.yarn.archive或spark.yarn.jar的spark版本。</p>
+</blockquote>
+<p>​    我检查了下，zeppelin ${zeppelin_home}/interpreter/spark/ 和 ${zeppelin_home}/lib下的hadoop版本，发现${zeppelin_home}/lib下的hadoop还是2.×的版本(FusionInsight_HD_6.5.1.7 hadoop 3.1.1)。于是满怀期待的替换了，测试[裂开了]还是不好使，依然报同样的错。</p>
+<p>​    找不到问题只好增加点日志，看看应用读取的spark_defaults.conf，发现了个奇怪的现象，<code>spark.yarn.archive</code>参数有重复。</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">spark.yarn.archive</span> <span class="string">value:hdfs://hacluster/user/spark2x/jars/V100R002C80SPC200/spark-archive-2x.zip</span></span><br><span class="line"><span class="meta">spark.yarn.archive</span>:<span class="string">hdfs://hacluster/user/spark2x/jars/6.5.1.7/spark-archive-2x.zip</span></span><br></pre></td></tr></table></figure>
+
+<p>但查看spark_defaults.conf也只发现下面的那一项，V100R002C80SPC200那个没找打在哪配置。。。没办法，修改下zeppelin的源码手动剔除这个配置项，重启问题解决😊。</p>
+<p><strong>问题原因</strong>：就是spark.yarn.archive配置了不明版本的spark-archive-2x.zip</p>
+<h4 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h4><p><a href="https://fusioninsight.github.io/ecosystem/zh-hans/Development/Zeppelin_0.8.1/#zeppelinspark" target="_blank" rel="noopener">Zeppelin连接Spark</a></p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://zhangjunjunah.github.io/2020/12/04/zeppelin-0-8-0-%E9%80%82%E9%85%8DFusionInsight-HD-6-5-1-7/" title="zeppelin 0.8.0 适配FusionInsight_HD_6.5.1.7" target="_blank" rel="external">https://zhangjunjunah.github.io/2020/12/04/zeppelin-0-8-0-%E9%80%82%E9%85%8DFusionInsight-HD-6-5-1-7/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/zhangjunjunah" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/zhangjunjunah" target="_blank"><span class="text-dark">机锋小摩托</span><small class="ml-1x">Web 开发 &amp; 设计</small></a></h3>
+        <div>积极向上，热爱生活。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="uyan_frame"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2021/06/24/markdown%E8%BD%AC%E7%BD%91%E9%A1%B5%E5%B0%8F%E7%BB%93/" title="markdown转网页小结"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/" title="在容器中提交yarn-client远端spark任务"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/cofess" target="_blank" title="Github" ><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+    <script>
+(function ($) {
+    $('.search-form').on('submit', function (e) {
+        var keyword = $('.search-form-input[name="wd"]').val();
+        window.location = 'https://www.baidu.com/s?wd=site:zhangjunjunah.github.io ' + keyword;
+        return false;
+    });
+})(jQuery);
+</script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+    <script defer type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=[object Object]"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

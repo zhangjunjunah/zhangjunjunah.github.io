@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>在容器中提交yarn-client远端spark任务 | Hexo</title>
+  <meta name="description" content="spark在容器中提交yarn-client任务方案一：容器端口nodePort映射方式方案说明​    默认情况下， spark-submit 使用pod的 hostname 作为 spark.driver.host ，而 hostname 是pod的主机名，因此 spark executor 无法解析它，而且 spark.driver.port 也在pod（容器）的本地。此方案是通过端口映射方">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在容器中提交yarn-client远端spark任务">
+<meta property="og:url" content="https://zhangjunjunah.github.io/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/index.html">
+<meta property="og:site_name" content="机锋小摩托的分享">
+<meta property="og:description" content="spark在容器中提交yarn-client任务方案一：容器端口nodePort映射方式方案说明​    默认情况下， spark-submit 使用pod的 hostname 作为 spark.driver.host ，而 hostname 是pod的主机名，因此 spark executor 无法解析它，而且 spark.driver.port 也在pod（容器）的本地。此方案是通过端口映射方">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zhangjunjunah.github.io/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/E:%5Cself-improvement%5Cself-blog%5Csource_posts%5C%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1%5Cimage-20201109100107412.png">
+<meta property="article:published_time" content="2020-11-09T01:44:17.000Z">
+<meta property="article:modified_time" content="2020-11-10T01:54:27.795Z">
+<meta property="article:author" content="机锋小摩托">
+<meta property="article:tag" content="K8S">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zhangjunjunah.github.io/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/E:%5Cself-improvement%5Cself-blog%5Csource_posts%5C%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1%5Cimage-20201109100107412.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://zhangjunjunah.github.io/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="机锋小摩托的分享" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body class="main-center theme-white" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/zhangjunjunah" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">机锋小摩托</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Web 开发 &amp; 设计</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> HeFei, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-books">
+          <a href="/books">
+            
+            <i class="icon icon-book-fill"></i>
+            
+            <span class="menu-title">书单</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/cofess" target="_blank" title="Github" ><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ceph/" rel="tag">Ceph</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/K8S/" rel="tag">K8S</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Log4J2/" rel="tag">Log4J2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyterlab/" rel="tag">jupyterlab</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/" rel="tag">spark</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/Ceph/" style="font-size: 13.5px;">Ceph</a> <a href="/tags/Docker/" style="font-size: 14px;">Docker</a> <a href="/tags/Java/" style="font-size: 13.5px;">Java</a> <a href="/tags/K8S/" style="font-size: 14px;">K8S</a> <a href="/tags/Linux/" style="font-size: 14px;">Linux</a> <a href="/tags/Log4J2/" style="font-size: 13px;">Log4J2</a> <a href="/tags/Nginx/" style="font-size: 13px;">Nginx</a> <a href="/tags/Spring/" style="font-size: 13px;">Spring</a> <a href="/tags/jupyterlab/" style="font-size: 13px;">jupyterlab</a> <a href="/tags/spark/" style="font-size: 13px;">spark</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/10/">十月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/06/">六月 2021</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/12/29/jupyterlab%E4%B8%AA%E6%80%A7%E5%8C%96%E5%BC%80%E5%8F%91%E5%8F%8A%E9%85%8D%E7%BD%AE-%E5%88%9D%E7%BA%A7%E7%AF%87/" class="title">jupyterlab个性化开发及配置(初级篇)</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-12-29T02:06:57.000Z" itemprop="datePublished">2021-12-29</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/12/10/linux-bashrc-bash-profile%E5%82%BB%E5%82%BB%E5%88%86%E4%B8%8D%E6%B8%85/" class="title">linux .bashrc ~/.bash_profile傻傻分不清</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-12-10T02:19:52.000Z" itemprop="datePublished">2021-12-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/12/10/linux%20buffcache%E7%9A%84%E9%82%A3%E4%BA%9B%E4%BA%8B%E5%84%BF/" class="title">linux buff/cache的那些事儿</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-12-10T01:57:02.000Z" itemprop="datePublished">2021-12-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/10/17/Nginx%20location%E6%96%9C%E6%9D%A0%E9%85%8D%E7%BD%AE%E5%B0%8F%E7%BB%93/" class="title">Nginx location斜杠配置小结</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-10-17T12:30:41.000Z" itemprop="datePublished">2021-10-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/" class="title">Linux文件系统小结</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-06-26T08:08:41.000Z" itemprop="datePublished">2021-06-26</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-在容器中提交yarn-client远端spark任务" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      在容器中提交yarn-client远端spark任务
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/" class="article-date">
+	  <time datetime="2020-11-09T01:44:17.000Z" itemprop="datePublished">2020-11-09</time>
+	</a>
+</span>
+        
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/K8S/" rel="tag">K8S</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="spark在容器中提交yarn-client任务"><a href="#spark在容器中提交yarn-client任务" class="headerlink" title="spark在容器中提交yarn-client任务"></a>spark在容器中提交yarn-client任务</h2><h3 id="方案一：容器端口nodePort映射方式"><a href="#方案一：容器端口nodePort映射方式" class="headerlink" title="方案一：容器端口nodePort映射方式"></a>方案一：容器端口nodePort映射方式</h3><h4 id="方案说明"><a href="#方案说明" class="headerlink" title="方案说明"></a>方案说明</h4><p>​    默认情况下， <code>spark-submit</code> 使用pod的 <code>hostname</code> 作为 <code>spark.driver.host</code> ，而 <code>hostname</code> 是pod的主机名，因此 <code>spark executor</code> 无法解析它，而且 <code>spark.driver.port</code> 也在pod（容器）的本地。此方案是通过端口映射方式连接yarn集群。</p>
+<ol>
+<li><p>创建deployement和service的同时，通过nodePort方式暴露spark.driver.port和spark.blockManager.port两个端口</p>
+</li>
+<li><p>spark-submit提交命令，添加参数</p>
+<p>–conf spark.driver.bindAddress=0.0.0.0 #固定值</p>
+<p>–conf spark.driver.host=$HOST_IP #k8s节点ip,可以固定为k8s master节点ip（非宿主节点）</p>
+<p>–conf spark.driver.port=$SPARK_DRIVER_PORT #通过nodePort暴露的端口</p>
+<p>–conf spark.driver.blockManager.port=$SPARK_DRIVER_PORT#通过nodePort暴露的端口</p>
+</li>
+</ol>
+<h3 id="方案二：hostNetwork模式"><a href="#方案二：hostNetwork模式" class="headerlink" title="方案二：hostNetwork模式"></a>方案二：hostNetwork模式</h3><h4 id="方案说明-1"><a href="#方案说明-1" class="headerlink" title="方案说明"></a>方案说明</h4><p>​    将pod修改为hostNetwork模式，容器可以使用宿主机的网络协议栈，复用宿主机的IP，可以监听端口，Spark也可以回调。</p>
+<h3 id="方案三：路由转发"><a href="#方案三：路由转发" class="headerlink" title="方案三：路由转发"></a>方案三：路由转发</h3><h4 id="方案说明-2"><a href="#方案说明-2" class="headerlink" title="方案说明"></a>方案说明</h4><p>​    之所以在容器内无法提交spark yarn-client任务，是因为容器内网与hadoop集群不互通，只要想办法解决网络互通，问题自然而然就解决了。下面是我们测试环境的网络转发图。</p>
+<p><img src="/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/E:%5Cself-improvement%5Cself-blog%5Csource_posts%5C%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1%5Cimage-20201109100107412.png" alt="image-20201109100107412"></p>
+<h3 id="参考blog"><a href="#参考blog" class="headerlink" title="参考blog"></a>参考blog</h3><p><a href="https://www.jianshu.com/p/ba7d1658c7f4" target="_blank" rel="noopener">在Kubernetes的pod中使用yarn-client调用远端spark集群</a><br><a href="http://www.longant.cn/index.php/zh-hans/node/1121" target="_blank" rel="noopener">Spark/k8s：如何用客户机模式在Kubernetes上运行Spark提交</a><br><a href="https://blog.csdn.net/csdn1115698735/article/details/100598230" target="_blank" rel="noopener">k8s骚操作 Pod服务通过IP对外访问&amp;k8s指定IP创建Pod</a></p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://zhangjunjunah.github.io/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/" title="在容器中提交yarn-client远端spark任务" target="_blank" rel="external">https://zhangjunjunah.github.io/2020/11/09/%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E6%8F%90%E4%BA%A4yarn-client%E8%BF%9C%E7%AB%AFspark%E4%BB%BB%E5%8A%A1/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/zhangjunjunah" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/zhangjunjunah" target="_blank"><span class="text-dark">机锋小摩托</span><small class="ml-1x">Web 开发 &amp; 设计</small></a></h3>
+        <div>积极向上，热爱生活。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="uyan_frame"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2020/12/04/zeppelin-0-8-0-%E9%80%82%E9%85%8DFusionInsight-HD-6-5-1-7/" title="zeppelin 0.8.0 适配FusionInsight_HD_6.5.1.7"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2020/10/25/%E4%B8%80%E6%AC%A1k8s-6443-%E7%AB%AF%E5%8F%A3-was-refused-%E8%A7%A3%E5%86%B3%E6%AD%A5%E9%AA%A4%E5%8F%8A%E6%80%9D%E8%B7%AF/" title="一次k8s 6443 端口 was refused 解决步骤及思路"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/cofess" target="_blank" title="Github" ><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+    <script>
+(function ($) {
+    $('.search-form').on('submit', function (e) {
+        var keyword = $('.search-form-input[name="wd"]').val();
+        window.location = 'https://www.baidu.com/s?wd=site:zhangjunjunah.github.io ' + keyword;
+        return false;
+    });
+})(jQuery);
+</script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+    <script defer type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=[object Object]"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

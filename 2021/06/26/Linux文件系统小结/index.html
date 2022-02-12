@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Linux文件系统小结 | Hexo</title>
+  <meta name="description" content="背景​        最近，公司需要再客户环境新搭一套k8s+ceph环境，主机只有一个操作系统，磁盘未处理。部门的同事都挺忙的，那主机初始化的工作也就我来做吧(名副其实打杂程序员)，正好借这个机会整理下linux文件系统。 操作步骤（虚拟机模拟）前置条件: 通过虚拟机新增了一块硬盘。  方案一:直接分区1.1查看磁盘信息  通过lsblk或fdisk -l 可以查看到磁盘挂载信息。 1.2为sd">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux文件系统小结">
+<meta property="og:url" content="https://zhangjunjunah.github.io/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/index.html">
+<meta property="og:site_name" content="机锋小摩托的分享">
+<meta property="og:description" content="背景​        最近，公司需要再客户环境新搭一套k8s+ceph环境，主机只有一个操作系统，磁盘未处理。部门的同事都挺忙的，那主机初始化的工作也就我来做吧(名副其实打杂程序员)，正好借这个机会整理下linux文件系统。 操作步骤（虚拟机模拟）前置条件: 通过虚拟机新增了一块硬盘。  方案一:直接分区1.1查看磁盘信息  通过lsblk或fdisk -l 可以查看到磁盘挂载信息。 1.2为sd">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zhangjunjunah.github.io/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/image-20210626175101142.png">
+<meta property="og:image" content="https://zhangjunjunah.github.io/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/image-20210626175959413.png">
+<meta property="og:image" content="https://zhangjunjunah.github.io/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/image-20210626180050973.png">
+<meta property="og:image" content="https://zhangjunjunah.github.io/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/image-20210626181756424.png">
+<meta property="og:image" content="https://zhangjunjunah.github.io/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/image-20210626183649714.png">
+<meta property="og:image" content="https://zhangjunjunah.github.io/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/image-20210626200809647.png">
+<meta property="og:image" content="https://zhangjunjunah.github.io/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/v2-3a750a7a7b9b72834d1b51839a079acd_720w.jpg">
+<meta property="article:published_time" content="2021-06-26T08:08:41.000Z">
+<meta property="article:modified_time" content="2021-06-30T07:03:41.328Z">
+<meta property="article:author" content="机锋小摩托">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zhangjunjunah.github.io/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/image-20210626175101142.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://zhangjunjunah.github.io/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="机锋小摩托的分享" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body class="main-center theme-white" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/zhangjunjunah" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">机锋小摩托</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Web 开发 &amp; 设计</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> HeFei, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-books">
+          <a href="/books">
+            
+            <i class="icon icon-book-fill"></i>
+            
+            <span class="menu-title">书单</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/cofess" target="_blank" title="Github" ><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ceph/" rel="tag">Ceph</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/K8S/" rel="tag">K8S</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Log4J2/" rel="tag">Log4J2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyterlab/" rel="tag">jupyterlab</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/" rel="tag">spark</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/Ceph/" style="font-size: 13.5px;">Ceph</a> <a href="/tags/Docker/" style="font-size: 14px;">Docker</a> <a href="/tags/Java/" style="font-size: 13.5px;">Java</a> <a href="/tags/K8S/" style="font-size: 14px;">K8S</a> <a href="/tags/Linux/" style="font-size: 14px;">Linux</a> <a href="/tags/Log4J2/" style="font-size: 13px;">Log4J2</a> <a href="/tags/Nginx/" style="font-size: 13px;">Nginx</a> <a href="/tags/Spring/" style="font-size: 13px;">Spring</a> <a href="/tags/jupyterlab/" style="font-size: 13px;">jupyterlab</a> <a href="/tags/spark/" style="font-size: 13px;">spark</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/10/">十月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/06/">六月 2021</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/12/29/jupyterlab%E4%B8%AA%E6%80%A7%E5%8C%96%E5%BC%80%E5%8F%91%E5%8F%8A%E9%85%8D%E7%BD%AE-%E5%88%9D%E7%BA%A7%E7%AF%87/" class="title">jupyterlab个性化开发及配置(初级篇)</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-12-29T02:06:57.000Z" itemprop="datePublished">2021-12-29</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/12/10/linux-bashrc-bash-profile%E5%82%BB%E5%82%BB%E5%88%86%E4%B8%8D%E6%B8%85/" class="title">linux .bashrc ~/.bash_profile傻傻分不清</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-12-10T02:19:52.000Z" itemprop="datePublished">2021-12-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/12/10/linux%20buffcache%E7%9A%84%E9%82%A3%E4%BA%9B%E4%BA%8B%E5%84%BF/" class="title">linux buff/cache的那些事儿</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-12-10T01:57:02.000Z" itemprop="datePublished">2021-12-10</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/10/17/Nginx%20location%E6%96%9C%E6%9D%A0%E9%85%8D%E7%BD%AE%E5%B0%8F%E7%BB%93/" class="title">Nginx location斜杠配置小结</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-10-17T12:30:41.000Z" itemprop="datePublished">2021-10-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/" class="title">Linux文件系统小结</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-06-26T08:08:41.000Z" itemprop="datePublished">2021-06-26</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-Linux文件系统小结" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Linux文件系统小结
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/" class="article-date">
+	  <time datetime="2021-06-26T08:08:41.000Z" itemprop="datePublished">2021-06-26</time>
+	</a>
+</span>
+        
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/Linux/" rel="tag">Linux</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>​        最近，公司需要再客户环境新搭一套k8s+ceph环境，主机只有一个操作系统，磁盘未处理。部门的同事都挺忙的，那主机初始化的工作也就我来做吧(名副其实打杂程序员)，正好借这个机会整理下linux文件系统。</p>
+<h3 id="操作步骤（虚拟机模拟）"><a href="#操作步骤（虚拟机模拟）" class="headerlink" title="操作步骤（虚拟机模拟）"></a>操作步骤（虚拟机模拟）</h3><p>前置条件: 通过虚拟机新增了一块硬盘。</p>
+<p><img src="/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/image-20210626175101142.png" alt="image-20210626175101142"></p>
+<h4 id="方案一-直接分区"><a href="#方案一-直接分区" class="headerlink" title="方案一:直接分区"></a>方案一:直接分区</h4><h5 id="1-1查看磁盘信息"><a href="#1-1查看磁盘信息" class="headerlink" title="1.1查看磁盘信息"></a>1.1查看磁盘信息</h5><p><img src="/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/image-20210626175959413.png" alt="image-20210626180144472"></p>
+<p><img src="/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/image-20210626180050973.png" alt="image-20210626180308348"></p>
+<p>通过lsblk或fdisk -l 可以查看到磁盘挂载信息。</p>
+<h5 id="1-2为sdb磁盘分区"><a href="#1-2为sdb磁盘分区" class="headerlink" title="1.2为sdb磁盘分区"></a>1.2为sdb磁盘分区</h5><p>命令行输入 <code>fdisk /dev/sdb [sdb为你新添磁盘名称]</code>,开始对磁盘的进行设置</p>
+<p><img src="/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/image-20210626181756424.png" alt="image-20210626181756424"></p>
+<h5 id="1-3使用-mkfs-创建文件系统"><a href="#1-3使用-mkfs-创建文件系统" class="headerlink" title="1.3使用 mkfs 创建文件系统"></a>1.3使用 mkfs 创建文件系统</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">(base) [root@centos ~]# mkfs.ext4 /dev/sdb1</span><br><span class="line">mke2fs 1.42.9 (28-Dec-2013)</span><br><span class="line">Filesystem label=</span><br><span class="line">OS type: Linux</span><br><span class="line">Block size=4096 (log=2)</span><br><span class="line">Fragment size=4096 (log=2)</span><br><span class="line">Stride=0 blocks, Stripe width=0 blocks</span><br><span class="line">1310720 inodes, 5242624 blocks</span><br><span class="line">262131 blocks (5.00%) reserved for the super user</span><br><span class="line">First data block=0</span><br><span class="line">Maximum filesystem blocks=2153775104</span><br><span class="line">160 block groups</span><br><span class="line">32768 blocks per group, 32768 fragments per group</span><br><span class="line">8192 inodes per group</span><br><span class="line">Superblock backups stored on blocks: </span><br><span class="line">        32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208, </span><br><span class="line">        4096000</span><br><span class="line"></span><br><span class="line">Allocating group tables: done                            </span><br><span class="line">Writing inode tables: done                            </span><br><span class="line">Creating journal (32768 blocks): done</span><br><span class="line">Writing superblocks and filesystem accounting information: done</span><br></pre></td></tr></table></figure>
+
+<h5 id="1-4挂载新分区到目录"><a href="#1-4挂载新分区到目录" class="headerlink" title="1.4挂载新分区到目录"></a>1.4挂载新分区到目录</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mount /dev/sdb1 /data</span><br></pre></td></tr></table></figure>
+
+<h5 id="1-5查看挂载信息"><a href="#1-5查看挂载信息" class="headerlink" title="1.5查看挂载信息"></a>1.5查看挂载信息</h5><p><img src="/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/image-20210626183649714.png" alt></p>
+<h4 id="方案二-通过LVM逻辑卷管理"><a href="#方案二-通过LVM逻辑卷管理" class="headerlink" title="方案二:通过LVM逻辑卷管理"></a>方案二:通过LVM逻辑卷管理</h4><h5 id="2-3创建pv-pvcreate-前面步骤与一相同"><a href="#2-3创建pv-pvcreate-前面步骤与一相同" class="headerlink" title="2.3创建pv pvcreate(前面步骤与一相同)"></a>2.3创建pv pvcreate(前面步骤与一相同)</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">[root@centos ~]# pvcreate /dev/sdb1</span><br><span class="line">WARNING: ext4 signature detected on /dev/sdb1 at offset 1080. Wipe it? [y/n]: y</span><br><span class="line">  Wiping ext4 signature on /dev/sdb1.</span><br><span class="line">  Physical volume "/dev/sdb1" successfully created.</span><br><span class="line">  [root@centos ~]# pvdisplay         </span><br><span class="line">  --- Physical volume ---</span><br><span class="line">  PV Name               /dev/sda2</span><br><span class="line">  VG Name               centos</span><br><span class="line">  PV Size               49.80 GiB / not usable 3.00 MiB</span><br><span class="line">  Allocatable           yes (but full)</span><br><span class="line">  PE Size               4.00 MiB</span><br><span class="line">  Total PE              12749</span><br><span class="line">  Free PE               0</span><br><span class="line">  Allocated PE          12749</span><br><span class="line">  PV UUID               fbIzRU-PkAg-2SWx-VEkM-t0Sk-FsRe-i8yBIM</span><br><span class="line">   </span><br><span class="line">  "/dev/sdb1" is a new physical volume of "&lt;20.00 GiB"</span><br><span class="line">  --- NEW Physical volume ---</span><br><span class="line">  PV Name               /dev/sdb1</span><br><span class="line">  VG Name               </span><br><span class="line">  PV Size               &lt;20.00 GiB</span><br><span class="line">  Allocatable           NO</span><br><span class="line">  PE Size               0   </span><br><span class="line">  Total PE              0</span><br><span class="line">  Free PE               0</span><br><span class="line">  Allocated PE          0</span><br><span class="line">  PV UUID               QEBpPz-K6MQ-0ku9-iXdw-rA1D-Bth2-LSdc4d</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-4创建vg-vgcreate"><a href="#2-4创建vg-vgcreate" class="headerlink" title="2.4创建vg  vgcreate"></a>2.4创建vg  vgcreate</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">(base) [root@centos ~]# vgcreate vg_test /dev/sdb1</span><br><span class="line">  Volume group "vg_test" successfully created</span><br><span class="line">(base) [root@centos ~]# vgdisplay</span><br><span class="line">  --- Volume group ---</span><br><span class="line">  VG Name               vg_test</span><br><span class="line">  System ID             </span><br><span class="line">  Format                lvm2</span><br><span class="line">  Metadata Areas        1</span><br><span class="line">  Metadata Sequence No  1</span><br><span class="line">  VG Access             read/write</span><br><span class="line">  VG Status             resizable</span><br><span class="line">  MAX LV                0</span><br><span class="line">  Cur LV                0</span><br><span class="line">  Open LV               0</span><br><span class="line">  Max PV                0</span><br><span class="line">  Cur PV                1</span><br><span class="line">  Act PV                1</span><br><span class="line">  VG Size               &lt;20.00 GiB</span><br><span class="line">  PE Size               4.00 MiB</span><br><span class="line">  Total PE              5119</span><br><span class="line">  Alloc PE / Size       0 / 0   </span><br><span class="line">  Free  PE / Size       5119 / &lt;20.00 GiB</span><br><span class="line">  VG UUID               cTHsWq-VxJv-ORbf-uI2A-FQml-fbdq-77gC0p</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-5创建lv-lvcreate"><a href="#2-5创建lv-lvcreate" class="headerlink" title="2.5创建lv lvcreate"></a>2.5创建lv lvcreate</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[root@centos ~]# lvcreate -l 100%VG -n lv_test vg_test</span><br><span class="line">  Logical volume "lv_test" created.</span><br><span class="line"></span><br><span class="line">[root@centos ~]# lvdisplay</span><br><span class="line">  --- Logical volume ---</span><br><span class="line">  LV Path                /dev/vg_test/lv_test</span><br><span class="line">  LV Name                lv_test</span><br><span class="line">  VG Name                vg_test</span><br><span class="line">  LV UUID                JdTeKJ-5kj3-pide-YVZe-hAzy-aqAX-eKVK0J</span><br><span class="line">  LV Write Access        read/write</span><br><span class="line">  LV Creation host, time centos, 2021-06-26 20:04:17 +0800</span><br><span class="line">  LV Status              available</span><br><span class="line"><span class="meta">  #</span><span class="bash"> open                 0</span></span><br><span class="line">  LV Size                &lt;20.00 GiB</span><br><span class="line">  Current LE             5119</span><br><span class="line">  Segments               1</span><br><span class="line">  Allocation             inherit</span><br><span class="line">  Read ahead sectors     auto</span><br><span class="line">  - currently set to     8192</span><br><span class="line">    Block device           253:4</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-6格式化并挂载"><a href="#2-6格式化并挂载" class="headerlink" title="2.6格式化并挂载"></a>2.6格式化并挂载</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">(base) [root@centos ~]# mkfs -t ext4 /dev/vg_test/lv_test</span><br><span class="line">mke2fs 1.42.9 (28-Dec-2013)</span><br><span class="line">Filesystem label=</span><br><span class="line">OS type: Linux</span><br><span class="line">Block size=4096 (log=2)</span><br><span class="line">Fragment size=4096 (log=2)</span><br><span class="line">Stride=0 blocks, Stripe width=0 blocks</span><br><span class="line">1310720 inodes, 5241856 blocks</span><br><span class="line">262092 blocks (5.00%) reserved for the super user</span><br><span class="line">First data block=0</span><br><span class="line">Maximum filesystem blocks=2153775104</span><br><span class="line">160 block groups</span><br><span class="line">32768 blocks per group, 32768 fragments per group</span><br><span class="line">8192 inodes per group</span><br><span class="line">Superblock backups stored on blocks: </span><br><span class="line">        32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208, </span><br><span class="line">        4096000</span><br><span class="line"></span><br><span class="line">Allocating group tables: done                            </span><br><span class="line">Writing inode tables: done                            </span><br><span class="line">Creating journal (32768 blocks): done</span><br><span class="line">Writing superblocks and filesystem accounting information: done   </span><br><span class="line"></span><br><span class="line">(base) [root@centos ~]# mount /dev/vg_test/lv_test /data</span><br></pre></td></tr></table></figure>
+<h5 id="2-7查看挂载信息"><a href="#2-7查看挂载信息" class="headerlink" title="2.7查看挂载信息"></a>2.7查看挂载信息</h5><p><img src="/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/image-20210626200809647.png" alt="image-20210626200809647"></p>
+<h3 id="LVM概念及方案比较"><a href="#LVM概念及方案比较" class="headerlink" title="LVM概念及方案比较"></a>LVM概念及方案比较</h3><p><strong>逻辑盘卷管理</strong></p>
+<blockquote>
+<p>LVM是逻辑盘卷管理（Logical Volume Manager）的简称，它是Linux环境下对磁盘分区进行管理的一种机制，LVM是建立在硬盘和分区之上的一个逻辑层，来提高磁盘分区管理的灵活性。<br>LVM的工作原理其实很简单，它就是通过将底层的物理硬盘抽象的封装起来，然后以逻辑卷的方式呈现给上层应用。在传统的磁盘管理机制中，我们的上层应用是直接访问文件系统，从而对底层的物理硬盘进行读取，而在LVM中，其通过对底层的硬盘进行封装，当我们对底层的物理硬盘进行操作时，其不再是针对于分区进行操作，而是通过一个叫做逻辑卷的东西来对其进行底层的磁盘管理操作。比如说我增加一个物理硬盘，这个时候上层的服务是感觉不到的，因为呈现给上层服务的是以逻辑卷的方式。</p>
+</blockquote>
+<blockquote>
+<p>LVM最大的特点就是可以对磁盘进行动态管理。因为逻辑卷的大小是可以动态调整的，而且不会丢失现有的数据。如果我们新增加了硬盘，其也不会改变现有上层的逻辑卷。作为一个动态磁盘管理机制，逻辑卷技术大大提高了磁盘管理的灵活性。<br>PV（Physical Volume）-物理卷<br>物理卷在逻辑卷管理中处于最底层，它可以是实际物理硬盘上的分区，也可以是整个物理硬盘，也可以是raid设备。<br>VG（Volumne Group）-卷组<br>卷组建立在物理卷之上，一个卷组中至少要包括一个物理卷，在卷组建立之后可动态添加物理卷到卷组中。一个逻辑卷管理系统工程中可以只有一个卷组，也可以拥有多个卷组。<br>LV（Logical Volume）-逻辑卷<br>逻辑卷建立在卷组之上，卷组中的未分配空间可以用于建立新的逻辑卷，逻辑卷建立后可以动态地扩展和缩小空间。系统中的多个逻辑卷可以属于同一个卷组，也可以属于不同的多个卷组。</p>
+</blockquote>
+<p>LVM使用分层结构，如下图所示。</p>
+<img src="/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/v2-3a750a7a7b9b72834d1b51839a079acd_720w.jpg" alt="img" style="zoom:Infinity%;">
+
+<p>图中顶部，首先是实际的物理磁盘及其划分的分区和其上的物理卷（PV）。一个或多个物理卷可以用来创建卷组（VG）。然后基于卷组可以创建逻辑卷（LV）。只要在卷组中有可用空间，就可以随心所欲的创建逻辑卷。文件系统就是在逻辑卷上创建的，然后可以在操作系统挂载和访问。</p>
+<p><strong>对比</strong></p>
+<p>传统分区使用固定大小分区，重新调整大小十分麻烦。但是，LVM可以创建和管理“逻辑”卷，而不是直接使用物理硬盘。可以让管理员弹性的管理逻辑卷的扩大缩小，操作简单，而不损坏已存储的数据。可以随意将新的硬盘添加到LVM，以直接扩展已经存在的逻辑卷。LVM并不需要重启就可以让内核知道分区的存在。</p>
+<h3 id="命令总结"><a href="#命令总结" class="headerlink" title="命令总结"></a>命令总结</h3><p>一、Linux磁盘分区与文件系统类命令</p>
+<table>
+<thead>
+<tr>
+<th><strong>命令</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>df</strong></td>
+<td>检查文件系统的磁盘空间占用情况，参数-a列出全部目录，参数-h按KB,MB,GB显示</td>
+</tr>
+<tr>
+<td><strong>du</strong></td>
+<td>检测某个目录或文件占用磁盘的空间，参数-s显示占用总空间；参数-sh统计目录大小</td>
+</tr>
+<tr>
+<td><strong>mount</strong></td>
+<td>挂载各种文件系统，如<strong>mount -t &lt;**</strong>文件系统<strong>**&gt;</strong> <strong>设备名</strong> <strong>挂载点</strong></td>
+</tr>
+<tr>
+<td><strong>file</strong></td>
+<td>判断文件类型</td>
+</tr>
+<tr>
+<td><strong>parted</strong></td>
+<td>适合与MBR、GPT两种模式的分区命令</td>
+</tr>
+<tr>
+<td><strong>fdisk</strong></td>
+<td>用于磁盘分区，是Linux的磁盘分区表操作工具</td>
+</tr>
+<tr>
+<td><strong>mkfs</strong></td>
+<td>磁盘格式化</td>
+</tr>
+<tr>
+<td><strong>fsck</strong></td>
+<td>fsck用来检查和维护不一致的文件系统</td>
+</tr>
+</tbody></table>
+<p>二、LVM命令</p>
+<p>常用</p>
+<table>
+<thead>
+<tr>
+<th>功能/<strong>**命令</strong></th>
+<th><strong>物理卷管理</strong></th>
+<th><strong>卷组管理</strong></th>
+<th><strong>逻辑卷管理</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>扫描</td>
+<td>pvscan</td>
+<td>vgscan</td>
+<td>lvscan</td>
+</tr>
+<tr>
+<td>建立</td>
+<td>pvcreate</td>
+<td>vgcreate</td>
+<td>lvcreate</td>
+</tr>
+<tr>
+<td>显示</td>
+<td>pvdisplay</td>
+<td>vgdisplay</td>
+<td>lvdisplay</td>
+</tr>
+<tr>
+<td>删除</td>
+<td>pvremove</td>
+<td>vgremove</td>
+<td>lvremove</td>
+</tr>
+<tr>
+<td>扩展</td>
+<td></td>
+<td>vgextend</td>
+<td>lvextend</td>
+</tr>
+<tr>
+<td>缩小</td>
+<td></td>
+<td>vgreduce</td>
+<td>lvreduce</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>pvcreate</td>
+<td>pvcreate 设备全路径名，物理卷的创建</td>
+</tr>
+<tr>
+<td>pvremove</td>
+<td>物理卷的删除</td>
+</tr>
+<tr>
+<td>vgscan</td>
+<td>检测系统中所有磁盘</td>
+</tr>
+<tr>
+<td>vgck</td>
+<td>vgck  [卷组名]检测卷组中卷组描述区域信息的一致性。</td>
+</tr>
+<tr>
+<td>vgdisplay</td>
+<td>vgdisplay [卷组名] 显示卷组的属性信息</td>
+</tr>
+<tr>
+<td>vgrename</td>
+<td>vgrename 原卷组名 新卷组名</td>
+</tr>
+<tr>
+<td>vgchange</td>
+<td>#vgchange -a y|n [卷组名] //改变卷组的相应属性，是否可分配<strong>#vgchange -l</strong> 最大逻辑卷数 //卷组可容纳最大逻辑卷数<strong>#vgchange -x y|n</strong> [卷组名] //卷是否有效</td>
+</tr>
+<tr>
+<td>vgexport</td>
+<td>卷组的输入</td>
+</tr>
+<tr>
+<td>vgimport</td>
+<td>卷组的输出</td>
+</tr>
+<tr>
+<td>pvs</td>
+<td>#显示PV的显示信息</td>
+</tr>
+<tr>
+<td>vgcfgbackup</td>
+<td>vgcfgbackup [卷组名] //把卷组中VGDA信息备份到”/etc/vmconf”目录中的文件</td>
+</tr>
+<tr>
+<td>vgcfgrestore</td>
+<td>vgcfgrestore -n [卷组名] 物理卷全路径名 //从备份文件中得到指定物理卷的信息</td>
+</tr>
+<tr>
+<td>vgcreate</td>
+<td>卷组创建</td>
+</tr>
+<tr>
+<td>vgremove</td>
+<td>卷组删除</td>
+</tr>
+<tr>
+<td>vgextend</td>
+<td>卷组扩展</td>
+</tr>
+<tr>
+<td>vgreduce</td>
+<td>卷组缩小</td>
+</tr>
+<tr>
+<td>vgmerge</td>
+<td>卷组合并</td>
+</tr>
+<tr>
+<td>vgsplit</td>
+<td>卷组拆分</td>
+</tr>
+<tr>
+<td>vgs</td>
+<td>显示VG简要信息</td>
+</tr>
+<tr>
+<td>lvcreate</td>
+<td>逻辑卷创建</td>
+</tr>
+<tr>
+<td>lvremove</td>
+<td>逻辑卷删除</td>
+</tr>
+<tr>
+<td>lvextend</td>
+<td>逻辑卷扩展</td>
+</tr>
+<tr>
+<td>lvreduce</td>
+<td>逻辑卷缩小</td>
+</tr>
+<tr>
+<td>lvmdiskscan</td>
+<td>检查所有的SCSI,IDE等存储设备</td>
+</tr>
+<tr>
+<td>lvscan</td>
+<td>检测逻辑卷的状态</td>
+</tr>
+<tr>
+<td>lvdisplay</td>
+<td>显示LV属性信息</td>
+</tr>
+<tr>
+<td>lvchange</td>
+<td>修改LV属性信息，-ay:标记LV为可用状态， -an：标记lv为不可用状态</td>
+</tr>
+<tr>
+<td>lvs</td>
+<td>显示LV 简要信息</td>
+</tr>
+</tbody></table>
+<h3 id="参考引用"><a href="#参考引用" class="headerlink" title="参考引用"></a>参考引用</h3><p><a href="https://blog.csdn.net/valage/article/details/73332147" target="_blank" rel="noopener">[1][linux分区满了，如何进行扩容]</a></p>
+<p><a href="https://blog.csdn.net/weixin_44318830/article/details/102762102" target="_blank" rel="noopener">[2][Linux之挂载新的硬盘(超详细!)]</a></p>
+<p><a href="https://my.oschina.net/u/3367404/blog/3095965" target="_blank" rel="noopener">[3][Linux系统下创建LV（逻辑卷）并挂载]</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/38226123" target="_blank" rel="noopener">[4][3分钟看懂linux磁盘划分]</a></p>
+<p><a href="https://blog.csdn.net/solaraceboy/article/details/78539233" target="_blank" rel="noopener">[5][基于LVM的磁盘管理]</a></p>
+<p><a href="https://blog.csdn.net/youmatterhsp/article/details/80696999" target="_blank" rel="noopener">[6][Linux磁盘分区与LVM详解]</a></p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://zhangjunjunah.github.io/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/" title="Linux文件系统小结" target="_blank" rel="external">https://zhangjunjunah.github.io/2021/06/26/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B0%8F%E7%BB%93/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/zhangjunjunah" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/zhangjunjunah" target="_blank"><span class="text-dark">机锋小摩托</span><small class="ml-1x">Web 开发 &amp; 设计</small></a></h3>
+        <div>积极向上，热爱生活。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="uyan_frame"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2021/10/17/Nginx%20location%E6%96%9C%E6%9D%A0%E9%85%8D%E7%BD%AE%E5%B0%8F%E7%BB%93/" title="Nginx location斜杠配置小结"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2021/06/24/markdown%E8%BD%AC%E7%BD%91%E9%A1%B5%E5%B0%8F%E7%BB%93/" title="markdown转网页小结"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/cofess" target="_blank" title="Github" ><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+    <script>
+(function ($) {
+    $('.search-form').on('submit', function (e) {
+        var keyword = $('.search-form-input[name="wd"]').val();
+        window.location = 'https://www.baidu.com/s?wd=site:zhangjunjunah.github.io ' + keyword;
+        return false;
+    });
+})(jQuery);
+</script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+    <script defer type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=[object Object]"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
